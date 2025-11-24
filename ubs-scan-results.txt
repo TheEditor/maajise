@@ -1,0 +1,383 @@
+ℹ Ignoring paths from /c/Users/davef/Documents/Projects/Claude/Vibe Coding/tooling/maajise/maajise/.ubsignore → node_modules vendor packages .next build dist target out bin obj .git .vscode .idea .beads .claude docs history openspec scripts public static assets *.md *.json *.config.* *.log *.txt *.lock *.sum .env* *.key *.pem *.cert
+⚠ rsync not available; .ubsignore entries will be advisory only
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  ██╗   ██╗██╗  ████████╗██╗███╗   ███╗ █████╗ ████████╗███████╗              ║
+║  ██║   ██║██║  ╚══██╔══╝██║████╗ ████║██╔══██╗╚══██╔══╝██╔════╝              ║
+║  ██║   ██║██║     ██║   ██║██╔████╔██║███████║   ██║   █████╗                ║
+║  ██║   ██║██║     ██║   ██║██║╚██╔╝██║██╔══██║   ██║   ██╔══╝                ║
+║  ╚██████╔╝███████╗██║   ██║██║ ╚═╝ ██║██║  ██║   ██║   ███████╗              ║
+║   ╚═════╝ ╚══════╝╚═╝   ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝              ║
+║                                                                              ║
+║  ██████╗ ██╗   ██╗ ██████╗         __       __                               ║
+║  ██╔══██╗██║   ██║██╔════╝         \ `-'"-'` /                               ║
+║  ██████╔╝██║   ██║██║  ███╗        / \_   _/ \                               ║
+║  ██╔══██╗██║   ██║██║   ██║        |  d\_/b  |                               ║
+║  ██████╔╝╚██████╔╝╚██████╔╝       .'\   V   /'.                              ║
+║  ╚═════╝  ╚═════╝  ╚═════╝        /   '-...-'   \                            ║
+║                                  | /         \ |                             ║
+║                                  \/\         /\/                             ║
+║                                  ==(||)---(||)==                             ║
+║                                                                              ║
+║  ███████╗  ██████╗   █████╗ ███╗   ██╗███╗   ██╗███████╗██████╗              ║
+║  ██╔════╝  ██╔═══╝  ██╔══██╗████╗  ██║████╗  ██║██╔════╝██╔══██╗             ║
+║  ███████╗  ██║      ███████║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝             ║
+║  ╚════██║  ██║      ██╔══██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗             ║
+║  ███████║  ██████╗  ██║  ██║██║ ╚████║██║ ╚████║███████╗██║  ██║             ║
+║  ╚══════╝  ╚═════╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝                  ║
+║                                                                              ║
+║     JS / TS • PYTHON • C / C++ • RUST • GO • JAVA • RUBY • SWIFT             ║
+║                    UBS: ULTIMATE BUG SCANNER • SARIF FUSION ☄️               ║
+║                                                                              ║
+║                                                                              ║
+║                     Night Owl QA                                             ║
+║                     “We see bugs before you do.”                             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+UBS Meta-Runner v5.0.0  2025-11-23 15:49:08
+Project: /c/Users/davef/Documents/Projects/Claude/Vibe Coding/tooling/maajise/maajise
+Format:  text
+Detected: golang
+ℹ fetching module golang → /c/Users/davef/.local/share/ubs/modules/ubs-golang.sh
+
+──────── golang ────────
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  ██╗   ██╗██╗  ████████╗██╗███╗   ███╗ █████╗ ████████╗███████╗      ║
+║  ██║   ██║██║  ╚══██╔══╝██║████╗ ████║██╔══██╗╚══██╔══╝██╔════╝      ║
+║  ██║   ██║██║     ██║   ██║██╔████╔██║███████║   ██║   █████╗        ║
+║  ██║   ██║██║     ██║   ██║██║╚██╔╝██║██╔══██║   ██║   ██╔══╝        ║
+║  ╚██████╔╝███████╗██║   ██║██║ ╚═╝ ██║██║  ██║   ██║   ███████╗      ║
+║   ╚═════╝ ╚══════╝╚═╝   ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝      ║
+║                                           ,_---~~~~~----._           ║
+║  ██████╗ ██╗   ██╗ ██████╗         _,,_,*^____      _____``*g*\"*,   ║
+║  ██╔══██╗██║   ██║██╔════╝        / __/ /'     ^.  /      \ ^@q   f  ║
+║  ██████╔╝██║   ██║██║  ███╗      [  @f | @))    |  | @))   l  0 _/   ║
+║  ██╔══██╗██║   ██║██║   ██║       \`/   \~____ / __ \_____/    \     ║
+║  ██████╔╝╚██████╔╝╚██████╔╝        |           _l__l_           I    ║
+║  ╚═════╝  ╚═════╝  ╚═════╝         }          [______]           I   ║
+║                                    ]            | | |            |   ║
+║                                    ]             ~ ~             |   ║
+║                                    |                            |    ║
+║                                     |                           |    ║
+║                                                                      ║
+║  ███████╗  ██████╗   █████╗ ███╗   ██╗███╗   ██╗███████╗██████╗      ║
+║  ██╔════╝  ██╔═══╝  ██╔══██╗████╗  ██║████╗  ██║██╔════╝██╔══██╗     ║
+║  ███████╗  ██║      ███████║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝     ║
+║  ╚════██║  ██║      ██╔══██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗     ║
+║  ███████║  ██████╗  ██║  ██║██║ ╚████║██║ ╚████║███████╗██║  ██║     ║
+║  ╚══════╝  ╚═════╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝          ║
+║                                                                      ║
+║  Go module • goroutine, context, HTTP client/server guardrails       ║
+║  UBS module: golang • AST packs + gofmt/go test integration          ║
+║  ASCII homage: Renee French gopher lineage                           ║
+║  Run standalone: modules/ubs-golang.sh --help                        ║
+║                                                                      ║
+║  Night Owl QA                                                        ║
+║  “We see bugs before you do.”                                        ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+Project:  /c/Users/davef/Documents/Projects/Claude/Vibe Coding/tooling/maajise/maajise
+Started:  2025-11-23T20:49:42Z
+Files:    9 (go,tmpl,gotmpl,tpl; go.mod,go.sum,go.work,go.work.sum)
+
+✓ ast-grep available (npx -y @ast-grep/cli) - full AST analysis enabled
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CONCURRENCY & GOROUTINE SAFETY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: goroutines in loops, WaitGroup imbalance, manual lock/unlock, tickers not stopped
+Race-prone constructs and lifecycle mistakes cause leaks and deadlocks
+
+• Goroutines launched
+  ℹ Info (1 found)
+    goroutine launches found
+
+• go inside loops (ensure capture correctness)
+
+• loop variable captured by goroutine (closure)
+
+• sync.WaitGroup Add/Done balance (heuristic)
+
+• Mutex manual Lock/Unlock (prefer defer after Lock)
+
+• time.NewTicker without Stop (heuristic)
+
+• Async error path coverage
+  ℹ Info (0 found)
+    ast-grep scan failed
+    Unable to compute async error coverage
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. CHANNELS & SELECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: select without default, send/receive in loops w/out backpressure, time.After in loop
+Channel misuse leads to deadlocks or unbounded growth
+
+• select statements (review for default/backpressure)
+  ℹ Info (0 found)
+    select statements present
+
+• time.After used inside loops
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. CONTEXT PROPAGATION & CANCELLATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: WithCancel/Timeout without cancel, Background() in handlers, ctx not first parameter (heuristic)
+Proper context usage avoids leaks and enables graceful shutdowns
+
+• context.With* calls without cancel (heuristic)
+  ✓ OK Cancel seems used with context.With*
+
+• http handlers using context.Background() (heuristic)
+
+• context.TODO usage
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. HTTP CLIENT/SERVER SAFETY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: default client use, missing client/server timeouts, resp.Body leaks
+Networking bugs leak resources and cause hangs
+
+• Default http.Client usage (Get/Post/Head/DefaultClient.Do)
+  ✓ OK No obvious default client usage
+
+• http.Client without Timeout
+
+• http.Server without timeouts (none set)
+
+• http.NewRequest without context
+
+• Response body Close() (heuristic)
+  ✓ OK Response bodies likely closed (heuristic)
+
+• TLS MinVersion missing
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. RESOURCE LIFECYCLE & DEFER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: defer in loops, missing Close/Stop, DB rows leaks
+Resource mistakes show up as FD leaks and memory growth
+
+• defer inside loops
+
+• database/sql Rows/Tx Close (heuristic)
+
+• database/sql Tx Commit/Rollback (heuristic)
+
+• time.Tick usage
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. ERROR HANDLING & WRAPPING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: ignored errors, fmt.Errorf without %w, panic in library code, recover outside defer
+Robust error paths prevent crashes and lost context
+
+• Ignored errors via blank identifier (heuristic)
+  ℹ Info (1 found)
+    Assignments discarding secondary return values (could be error)
+
+• fmt.Errorf without %w when wrapping err
+
+• panic usage
+
+• recover outside deferred func
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. JSON & ENCODING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: Decoder without DisallowUnknownFields, unchecked Unmarshal, heavy ReadAll
+Parsing mistakes silently lose data or crash later
+
+• json.Decoder without DisallowUnknownFields
+
+• json.Unmarshal calls
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. FILESYSTEM & I/O
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: ioutil (deprecated), ReadAll on bodies, Close leaks
+I/O mistakes cause memory spikes and descriptor leaks
+
+• ioutil package usage (deprecated)
+
+• io.ReadAll usage
+
+• File open without Close (heuristic)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. CRYPTOGRAPHY & SECURITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: weak hashes, math/rand for security, InsecureSkipVerify, exec sh -c
+Security footguns are easy to miss and costly to fix
+
+• Weak hashes (md5/sha1) and RC4
+
+• math/rand used for secrets
+
+• TLS InsecureSkipVerify=true
+
+• exec sh -c (command injection risk)
+
+• exec without context
+
+• Lightweight taint analysis
+  🔥 CRITICAL (1 found)
+    User input reaches exec.Command/CommandContext
+    Validate and sanitize shell arguments (path.Clean, allowlists) or avoid shell invocation (e.g., main.go:612 bufio.NewReader(os.Stdin) -> reader -> remoteURL -> exec.Command
+)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. REFLECTION & UNSAFE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: unsafe package usage, heavy reflect, interface{} prevalence
+These features bypass type safety and may hide bugs
+
+• unsafe package usage
+
+• reflect usage
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. IMPORT HYGIENE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: dot-imports, blank imports, duplicate module trees
+Clean imports improve readability and safety
+
+• dot-imports
+
+• blank imports
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. MODULE & BUILD HYGIENE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: go.mod version < 1.23, missing go.sum, toolchain directive
+Build settings directly affect correctness and performance
+
+• go.mod presence and version directive
+  ℹ Info (1 found)
+    go.mod file(s) present
+  ⚠ Warning (1 found)
+    go.mod with go directive < 1.23
+    Set 'go 1.23' (or newer) where appropriate
+
+• go.sum presence
+  ℹ Info (1 found)
+    go.sum not found
+
+• toolchain directive usage (informational)
+
+• replace directives (informational)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. TESTING PRACTICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: tests existence, t.Parallel usage (heuristic), race-prone patterns
+Healthy tests parallelize safely and fail fast
+
+• Test files
+  ℹ Info (0 found)
+    No test files found
+
+• t.Parallel usage (heuristic)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. LOGGING & PRINTF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: fmt.Print in libraries, log with secrets (heuristic)
+Logging should be structured, leveled, and scrubbed
+
+• fmt.Print/Printf/Println usage
+  ℹ Info (53 found)
+    Heavy fmt.* logging - consider structured logging
+
+• Logging secrets (heuristic)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. STYLE & MODERNIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: interface{} vs any, dot-imports, context parameter position (heuristic)
+Modern idioms reduce boilerplate and mistakes
+
+• interface{} occurrences
+
+• context.Context parameter not first (heuristic)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. PANIC/RECOVER & TIME PATTERNS (AST Pack)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ AST-detected: panic(), recover outside defer, time.Tick, time.After in loop
+Codifies common pitfalls as precise AST rules
+ℹ ast-grep produced structured matches. Tally by rule id:
+  (no matches)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. RESOURCE LIFECYCLE CORRELATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: context.With* without cancel, tickers/timers without Stop
+Go resources must be explicitly cleaned up to avoid leaks
+
+• Resource lifecycle correlation
+  ℹ Info (0 found)
+    Resource helper missing
+    Expected /c/Users/davef/.local/share/ubs/modules/helpers/resource_lifecycle_go.go
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. GO TOOLING (OPTIONAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: formatting drift, vet findings, known vulnerabilities (govulncheck)
+This section runs only with --go-tools and if Go tools are available
+  ℹ Info (0 found)
+    Go tools disabled (use --go-tools) or Go not found
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. DEPENDENCY & BUILD DRIFT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▓▓▓ Detects: multiple modules, inconsistent go directives, missing replace cleanup
+Prevents subtle build reproducibility problems
+
+• Inconsistent go directive versions across modules (heuristic)
+  ✓ OK Single module repository
+
+═══════════════════════════════════════════════════════════════════════════
+                    🎯 SCAN COMPLETE 🎯                                  
+═══════════════════════════════════════════════════════════════════════════
+
+Summary Statistics:
+  Files scanned:    9
+  Critical issues:  1
+  Warning issues:   1
+  Info items:       57
+
+Priority Actions:
+  🔥 FIX CRITICAL ISSUES IMMEDIATELY
+  These cause crashes, security vulnerabilities, or data corruption
+  ⚠ Review and fix WARNING items
+  These cause bugs, performance issues, or maintenance problems
+  ℹ Consider INFO suggestions
+  Code quality improvements and best practices
+
+Scan completed at: 2025-11-23T20:52:21Z
+
+Tip: Run with -v/--verbose for more code samples per finding.
+Add to pre-commit: ./ubs --ci --fail-on-warning . > go-scan-report.txt
+
