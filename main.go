@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	"maajise/cmd"
 	"maajise/internal/validate"
 )
 
@@ -23,21 +24,6 @@ const (
 	blue   = "\033[0;34m"
 	reset  = "\033[0m"
 )
-
-// Config holds runtime configuration
-type Config struct {
-	ProjectName  string
-	InPlace      bool
-	NoOverwrite  bool
-	SkipGit      bool
-	SkipBeads    bool
-	SkipCommit   bool
-	SkipRemote   bool
-	SkipGitUser  bool
-	GitName      string
-	GitEmail     string
-	Verbose      bool
-}
 
 func errorMsg(msg string) {
 	fmt.Fprintf(os.Stderr, "%s✗%s %s\n", red, reset, msg)
@@ -103,8 +89,8 @@ Requirements:
 `, VERSION)
 }
 
-func parseFlags() *Config {
-	cfg := &Config{}
+func parseFlags() *cmd.Config {
+	cfg := &cmd.Config{}
 
 	flag.BoolVar(&cfg.InPlace, "in-place", false, "Initialize in current directory")
 	flag.BoolVar(&cfg.NoOverwrite, "no-overwrite", false, "Skip existing files")
@@ -151,7 +137,7 @@ func parseFlags() *Config {
 	return cfg
 }
 
-func checkDependencies(cfg *Config) error {
+func checkDependencies(cfg *cmd.Config) error {
 	missing := []string{}
 
 	if !cfg.SkipGit {
@@ -195,7 +181,7 @@ func fileExists(path string) bool {
 	return err == nil
 }
 
-func createStructure(cfg *Config) (string, error) {
+func createStructure(cfg *cmd.Config) (string, error) {
 	if cfg.InPlace {
 		// Use current directory
 		cwd, err := os.Getwd()
@@ -225,7 +211,7 @@ func createStructure(cfg *Config) (string, error) {
 	return innerPath, nil
 }
 
-func initGit(repoDir string, cfg *Config) error {
+func initGit(repoDir string, cfg *cmd.Config) error {
 	if cfg.SkipGit {
 		if cfg.Verbose {
 			info("Skipping Git (--skip-git)")
@@ -262,7 +248,7 @@ func initGit(repoDir string, cfg *Config) error {
 	return nil
 }
 
-func configureGitUser(repoDir string, cfg *Config) error {
+func configureGitUser(repoDir string, cfg *cmd.Config) error {
 	if cfg.SkipGit || cfg.SkipGitUser {
 		if cfg.Verbose {
 			info("Skipping Git user configuration")
@@ -356,7 +342,7 @@ func configureGitUser(repoDir string, cfg *Config) error {
 	return nil
 }
 
-func initBeads(repoDir string, cfg *Config) error {
+func initBeads(repoDir string, cfg *cmd.Config) error {
 	if cfg.SkipBeads {
 		if cfg.Verbose {
 			info("Skipping Beads (--skip-beads)")
@@ -393,7 +379,7 @@ func initBeads(repoDir string, cfg *Config) error {
 	return nil
 }
 
-func writeFileIfNotExists(path, content string, cfg *Config) error {
+func writeFileIfNotExists(path, content string, cfg *cmd.Config) error {
 	if fileExists(path) {
 		if cfg.NoOverwrite {
 			warn(fmt.Sprintf("Skipped %s (exists, --no-overwrite)", filepath.Base(path)))
@@ -410,7 +396,7 @@ func writeFileIfNotExists(path, content string, cfg *Config) error {
 	return nil
 }
 
-func createUbsignore(repoDir string, cfg *Config) error {
+func createUbsignore(repoDir string, cfg *cmd.Config) error {
 	info("Creating .ubsignore...")
 
 	content := `# UBS Scanner Ignore File
@@ -470,7 +456,7 @@ assets/
 	return writeFileIfNotExists(path, content, cfg)
 }
 
-func createGitignore(repoDir string, cfg *Config) error {
+func createGitignore(repoDir string, cfg *cmd.Config) error {
 	info("Creating .gitignore...")
 
 	content := `# Dependencies
@@ -525,7 +511,7 @@ coverage/
 	return writeFileIfNotExists(path, content, cfg)
 }
 
-func createReadme(repoDir string, cfg *Config) error {
+func createReadme(repoDir string, cfg *cmd.Config) error {
 	info("Creating README.md...")
 
 	content := fmt.Sprintf(`# %s
@@ -606,7 +592,7 @@ ubs . --fail-on-warning
 	return writeFileIfNotExists(path, content, cfg)
 }
 
-func createInitialCommit(repoDir string, cfg *Config) error {
+func createInitialCommit(repoDir string, cfg *cmd.Config) error {
 	if cfg.SkipGit || cfg.SkipCommit {
 		if cfg.Verbose {
 			info("Skipping initial commit")
@@ -664,7 +650,7 @@ func createInitialCommit(repoDir string, cfg *Config) error {
 	return nil
 }
 
-func setupGitRemote(repoDir string, cfg *Config) error {
+func setupGitRemote(repoDir string, cfg *cmd.Config) error {
 	if cfg.SkipGit || cfg.SkipRemote {
 		if cfg.Verbose {
 			info("Skipping remote setup")
@@ -742,7 +728,7 @@ func setupGitRemote(repoDir string, cfg *Config) error {
 	return nil
 }
 
-func showSummary(repoPath string, cfg *Config) {
+func showSummary(repoPath string, cfg *cmd.Config) {
 	fmt.Println()
 	fmt.Printf("%s╔═══════════════════════════════════════════════════════════╗%s\n", green, reset)
 	fmt.Printf("%s║  ✓ Repository initialized successfully!                   ║%s\n", green, reset)
