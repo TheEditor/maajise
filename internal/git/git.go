@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"maajise/internal/ui"
 )
@@ -36,51 +37,112 @@ func Init(repoDir string, verbose bool) error {
 	return nil
 }
 
-// CreateCommit creates a commit with the given files and message
-func CreateCommit(repoDir string, files []string, message string, verbose bool) error {
-	ui.Info("Creating initial commit...")
+// SetConfig sets a git configuration value in a specific repository
+func SetConfig(repoDir string, key string, value string, verbose bool) error {
+	cmd := exec.Command("git", "config", key, value)
+	cmd.Dir = repoDir
+	if verbose {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
 
-	// Check if there's anything to commit
-	statusCmd := exec.Command("git", "status", "--porcelain")
-	statusCmd.Dir = repoDir
-	output, err := statusCmd.Output()
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to set git config %s: %w", key, err)
+	}
+
+	return nil
+}
+
+// GetConfig retrieves a git configuration value from a specific repository
+func GetConfig(repoDir string, key string) (string, error) {
+	cmd := exec.Command("git", "config", key)
+	cmd.Dir = repoDir
+
+	output, err := cmd.Output()
 	if err != nil {
-		ui.Error("Failed to check git status")
-		return err
+		return "", fmt.Errorf("failed to get git config %s: %w", key, err)
 	}
 
-	if len(output) == 0 {
-		ui.Warn("Nothing to commit")
-		return nil
+	return strings.TrimSpace(string(output)), nil
+}
+
+// HasChanges checks if there are any uncommitted changes
+func HasChanges(repoDir string) (bool, error) {
+	cmd := exec.Command("git", "status", "--porcelain")
+	cmd.Dir = repoDir
+
+	output, err := cmd.Output()
+	if err != nil {
+		return false, fmt.Errorf("failed to check git status: %w", err)
 	}
 
-	// Add files
+	return len(output) > 0, nil
+}
+
+// AddFiles stages files for commit
+func AddFiles(repoDir string, files []string, verbose bool) error {
+	if len(files) == 0 {
+		return fmt.Errorf("no files to add")
+	}
+
 	args := append([]string{"add"}, files...)
-	addCmd := exec.Command("git", args...)
-	addCmd.Dir = repoDir
+	cmd := exec.Command("git", args...)
+	cmd.Dir = repoDir
 	if verbose {
-		addCmd.Stdout = os.Stdout
-		addCmd.Stderr = os.Stderr
-	}
-	if err := addCmd.Run(); err != nil {
-		ui.Error("Failed to add files")
-		return err
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 	}
 
-	// Commit
-	commitCmd := exec.Command("git", "commit", "-m", message)
-	commitCmd.Dir = repoDir
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to add files: %w", err)
+	}
+
+	return nil
+}
+
+// CreateCommit creates a commit with the given message
+func CreateCommit(repoDir string, message string, verbose bool) error {
+	cmd := exec.Command("git", "commit", "-m", message)
+	cmd.Dir = repoDir
 	if verbose {
-		commitCmd.Stdout = os.Stdout
-		commitCmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 	}
 
-	if err := commitCmd.Run(); err != nil {
-		ui.Error("Failed to create commit")
-		return err
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to create commit: %w", err)
 	}
 
-	ui.Success("Initial commit created")
+	return nil
+}
+
+// GetRemote retrieves the URL for a named remote
+func GetRemote(repoDir string, remoteName string) (string, error) {
+	cmd := exec.Command("git", "remote", "get-url", remoteName)
+	cmd.Dir = repoDir
+
+	output, err := cmd.Output()
+	if err != nil {
+		// Remote doesn't exist
+		return "", fmt.Errorf("remote %s not found", remoteName)
+	}
+
+	return strings.TrimSpace(string(output)), nil
+}
+
+// AddRemote adds a new remote to the repository
+func AddRemote(repoDir string, remoteName string, url string, verbose bool) error {
+	cmd := exec.Command("git", "remote", "add", remoteName, url)
+	cmd.Dir = repoDir
+	if verbose {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to add remote %s: %w", remoteName, err)
+	}
+
 	return nil
 }
 

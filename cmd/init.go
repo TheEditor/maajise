@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	"maajise/internal/git"
 	"maajise/internal/validate"
 )
 
@@ -185,31 +186,10 @@ func (ic *InitCommand) initGit(repoDir string) error {
 		return nil
 	}
 
-	// Check if already a git repo
-	gitDir := filepath.Join(repoDir, ".git")
-	if ic.fileExists(gitDir) {
-		if ic.config.NoOverwrite {
-			fmt.Println("⚠ Git already initialized (--no-overwrite)")
-			return nil
-		}
-		fmt.Println("⚠ Git already initialized")
-		return nil
+	if err := git.Init(repoDir, ic.config.Verbose); err != nil {
+		return err
 	}
 
-	fmt.Println("→ Initializing Git...")
-
-	cmd := exec.Command("git", "init")
-	cmd.Dir = repoDir
-	if ic.config.Verbose {
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-	}
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git init failed: %w", err)
-	}
-
-	fmt.Println("✓ Git initialized")
 	return nil
 }
 
@@ -275,25 +255,13 @@ func (ic *InitCommand) configureGitUser(repoDir string) error {
 	}
 
 	// Set user.name
-	nameCmd := exec.Command("git", "config", "user.name", userName)
-	nameCmd.Dir = repoDir
-	if ic.config.Verbose {
-		nameCmd.Stdout = os.Stdout
-		nameCmd.Stderr = os.Stderr
-	}
-	if err := nameCmd.Run(); err != nil {
-		return fmt.Errorf("failed to set user.name: %w", err)
+	if err := git.SetConfig(repoDir, "user.name", userName, ic.config.Verbose); err != nil {
+		return err
 	}
 
 	// Set user.email
-	emailCmd := exec.Command("git", "config", "user.email", userEmail)
-	emailCmd.Dir = repoDir
-	if ic.config.Verbose {
-		emailCmd.Stdout = os.Stdout
-		emailCmd.Stderr = os.Stderr
-	}
-	if err := emailCmd.Run(); err != nil {
-		return fmt.Errorf("failed to set user.email: %w", err)
+	if err := git.SetConfig(repoDir, "user.email", userEmail, ic.config.Verbose); err != nil {
+		return err
 	}
 
 	fmt.Printf("✓ Git user configured: %s <%s>\n", userName, userEmail)
@@ -561,26 +529,19 @@ func (ic *InitCommand) createInitialCommit(repoDir string) error {
 	fmt.Println("→ Creating initial commit...")
 
 	// Check if there's anything to commit
-	statusCmd := exec.Command("git", "status", "--porcelain")
-	statusCmd.Dir = repoDir
-	output, err := statusCmd.Output()
+	hasChanges, err := git.HasChanges(repoDir)
 	if err != nil {
-		return fmt.Errorf("failed to check git status: %w", err)
+		return err
 	}
 
-	if len(output) == 0 {
+	if !hasChanges {
 		fmt.Println("⚠ Nothing to commit")
 		return nil
 	}
 
-	addCmd := exec.Command("git", "add", ".ubsignore", ".gitignore", "README.md")
-	addCmd.Dir = repoDir
-	if ic.config.Verbose {
-		addCmd.Stdout = os.Stdout
-		addCmd.Stderr = os.Stderr
-	}
-	if err := addCmd.Run(); err != nil {
-		return fmt.Errorf("failed to add files: %w", err)
+	// Add files
+	if err := git.AddFiles(repoDir, []string{".ubsignore", ".gitignore", "README.md"}, ic.config.Verbose); err != nil {
+		return err
 	}
 
 	commitMsg := `Initial commit
@@ -590,15 +551,9 @@ func (ic *InitCommand) createInitialCommit(repoDir string) error {
 - Add README.md with project structure
 - Initialize Beads issue tracking`
 
-	commitCmd := exec.Command("git", "commit", "-m", commitMsg)
-	commitCmd.Dir = repoDir
-	if ic.config.Verbose {
-		commitCmd.Stdout = os.Stdout
-		commitCmd.Stderr = os.Stderr
-	}
-
-	if err := commitCmd.Run(); err != nil {
-		return fmt.Errorf("failed to create commit: %w", err)
+	// Create commit
+	if err := git.CreateCommit(repoDir, commitMsg, ic.config.Verbose); err != nil {
+		return err
 	}
 
 	fmt.Println("✓ Initial commit created")
@@ -614,13 +569,9 @@ func (ic *InitCommand) setupGitRemote(repoDir string) {
 	}
 
 	// Check if remote already exists
-	cmd := exec.Command("git", "remote", "get-url", "origin")
-	cmd.Dir = repoDir
-	output, err := cmd.Output()
-
+	existingURL, err := git.GetRemote(repoDir, "origin")
 	if err == nil {
 		// Remote already exists
-		existingURL := strings.TrimSpace(string(output))
 		fmt.Printf("⚠ Remote 'origin' already exists: %s\n", existingURL)
 		return
 	}
@@ -662,9 +613,7 @@ func (ic *InitCommand) setupGitRemote(repoDir string) {
 		return
 	}
 
-	addRemoteCmd := exec.Command("git", "remote", "add", "origin", remoteURL)
-	addRemoteCmd.Dir = repoDir
-	if err := addRemoteCmd.Run(); err != nil {
+	if err := git.AddRemote(repoDir, "origin", remoteURL, ic.config.Verbose); err != nil {
 		fmt.Println("⚠ Failed to add remote (may already exist)")
 		return
 	}
