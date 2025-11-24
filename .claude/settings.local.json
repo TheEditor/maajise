@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bd ready:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
