@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"testing"
+
+	"maajise/cmd"
 )
 
 func TestSetupGitRemote(t *testing.T) {
@@ -68,14 +70,14 @@ func TestSetupGitRemote(t *testing.T) {
 			defer os.RemoveAll(tmpDir)
 
 			// Initialize git repo
-			cmd := exec.Command("git", "init")
-			cmd.Dir = tmpDir
-			if err := cmd.Run(); err != nil {
+			gitCmd := exec.Command("git", "init")
+			gitCmd.Dir = tmpDir
+			if err := gitCmd.Run(); err != nil {
 				t.Fatalf("Failed to init git repo: %v", err)
 			}
 
 			// Mock stdin with the remote URL
-			cfg := &Config{
+			cfg := &cmd.Config{
 				ProjectName: "test-project",
 				SkipGit:     false,
 				SkipRemote:  false,
@@ -110,9 +112,9 @@ func TestSetupGitRemote(t *testing.T) {
 
 			// If setup succeeded, verify the remote was actually added
 			if !tt.shouldError && tt.checkRemote {
-				cmd := exec.Command("git", "remote", "get-url", "origin")
-				cmd.Dir = tmpDir
-				output, err := cmd.Output()
+				gitCmd := exec.Command("git", "remote", "get-url", "origin")
+				gitCmd.Dir = tmpDir
+				output, err := gitCmd.Output()
 				if err != nil {
 					t.Errorf("Failed to get remote: %v", err)
 					return
@@ -127,9 +129,9 @@ func TestSetupGitRemote(t *testing.T) {
 
 			// If setup failed, verify no remote was added
 			if tt.shouldError {
-				cmd := exec.Command("git", "remote", "get-url", "origin")
-				cmd.Dir = tmpDir
-				_, err := cmd.Output()
+				gitCmd := exec.Command("git", "remote", "get-url", "origin")
+				gitCmd.Dir = tmpDir
+				_, err := gitCmd.Output()
 				// Error is expected when remote doesn't exist
 				if err == nil {
 					t.Errorf("Expected remote to not exist, but it was added")
@@ -172,13 +174,13 @@ func TestSetupGitRemoteSkipFlags(t *testing.T) {
 			defer os.RemoveAll(tmpDir)
 
 			// Initialize git repo
-			cmd := exec.Command("git", "init")
-			cmd.Dir = tmpDir
-			if err := cmd.Run(); err != nil {
+			gitCmd := exec.Command("git", "init")
+			gitCmd.Dir = tmpDir
+			if err := gitCmd.Run(); err != nil {
 				t.Fatalf("Failed to init git repo: %v", err)
 			}
 
-			cfg := &Config{
+			cfg := &cmd.Config{
 				ProjectName: "test-project",
 				SkipGit:     tt.skipGit,
 				SkipRemote:  tt.skipRemote,
@@ -192,9 +194,9 @@ func TestSetupGitRemoteSkipFlags(t *testing.T) {
 			}
 
 			// Verify no remote was added
-			cmd = exec.Command("git", "remote", "get-url", "origin")
-			cmd.Dir = tmpDir
-			_, err = cmd.Output()
+gitCmd = exec.Command("git", "remote", "get-url", "origin")
+			gitCmd.Dir = tmpDir
+			_, err = gitCmd.Output()
 			if err == nil {
 				t.Errorf("Expected no remote to be added when flags are set")
 			}
@@ -211,20 +213,20 @@ func TestSetupGitRemoteExistingRemote(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Initialize git repo
-	cmd := exec.Command("git", "init")
-	cmd.Dir = tmpDir
-	if err := cmd.Run(); err != nil {
+	gitCmd := exec.Command("git", "init")
+	gitCmd.Dir = tmpDir
+	if err := gitCmd.Run(); err != nil {
 		t.Fatalf("Failed to init git repo: %v", err)
 	}
 
 	// Add an existing remote
-	cmd = exec.Command("git", "remote", "add", "origin", "https://github.com/existing/repo.git")
-	cmd.Dir = tmpDir
-	if err := cmd.Run(); err != nil {
+gitCmd = exec.Command("git", "remote", "add", "origin", "https://github.com/existing/repo.git")
+	gitCmd.Dir = tmpDir
+	if err := gitCmd.Run(); err != nil {
 		t.Fatalf("Failed to add remote: %v", err)
 	}
 
-	cfg := &Config{
+	cfg := &cmd.Config{
 		ProjectName: "test-project",
 		SkipGit:     false,
 		SkipRemote:  false,
@@ -238,9 +240,9 @@ func TestSetupGitRemoteExistingRemote(t *testing.T) {
 	}
 
 	// Verify the original remote is still there
-	cmd = exec.Command("git", "remote", "get-url", "origin")
-	cmd.Dir = tmpDir
-	output, err := cmd.Output()
+gitCmd = exec.Command("git", "remote", "get-url", "origin")
+	gitCmd.Dir = tmpDir
+	output, err := gitCmd.Output()
 	if err != nil {
 		t.Errorf("Failed to get remote: %v", err)
 		return
@@ -262,13 +264,13 @@ func TestSetupGitRemoteEmptyURL(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Initialize git repo
-	cmd := exec.Command("git", "init")
-	cmd.Dir = tmpDir
-	if err := cmd.Run(); err != nil {
+	gitCmd := exec.Command("git", "init")
+	gitCmd.Dir = tmpDir
+	if err := gitCmd.Run(); err != nil {
 		t.Fatalf("Failed to init git repo: %v", err)
 	}
 
-	cfg := &Config{
+	cfg := &cmd.Config{
 		ProjectName: "test-project",
 		SkipGit:     false,
 		SkipRemote:  false,
@@ -300,9 +302,9 @@ func TestSetupGitRemoteEmptyURL(t *testing.T) {
 	}
 
 	// Verify no remote was added
-	cmd = exec.Command("git", "remote", "get-url", "origin")
-	cmd.Dir = tmpDir
-	_, err = cmd.Output()
+gitCmd = exec.Command("git", "remote", "get-url", "origin")
+	gitCmd.Dir = tmpDir
+	_, err = gitCmd.Output()
 	if err == nil {
 		t.Errorf("Expected no remote to be added when empty URL provided")
 	}
@@ -317,13 +319,13 @@ func TestSetupGitRemoteNoAnswer(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Initialize git repo
-	cmd := exec.Command("git", "init")
-	cmd.Dir = tmpDir
-	if err := cmd.Run(); err != nil {
+	gitCmd := exec.Command("git", "init")
+	gitCmd.Dir = tmpDir
+	if err := gitCmd.Run(); err != nil {
 		t.Fatalf("Failed to init git repo: %v", err)
 	}
 
-	cfg := &Config{
+	cfg := &cmd.Config{
 		ProjectName: "test-project",
 		SkipGit:     false,
 		SkipRemote:  false,
@@ -355,9 +357,9 @@ func TestSetupGitRemoteNoAnswer(t *testing.T) {
 	}
 
 	// Verify no remote was added
-	cmd = exec.Command("git", "remote", "get-url", "origin")
-	cmd.Dir = tmpDir
-	_, err = cmd.Output()
+gitCmd = exec.Command("git", "remote", "get-url", "origin")
+	gitCmd.Dir = tmpDir
+	_, err = gitCmd.Output()
 	if err == nil {
 		t.Errorf("Expected no remote to be added when user declines")
 	}
@@ -394,13 +396,13 @@ func TestConfigureGitUserInteractive(t *testing.T) {
 			defer os.RemoveAll(tmpDir)
 
 			// Initialize git repo
-			cmd := exec.Command("git", "init")
-			cmd.Dir = tmpDir
-			if err := cmd.Run(); err != nil {
+			gitCmd := exec.Command("git", "init")
+			gitCmd.Dir = tmpDir
+			if err := gitCmd.Run(); err != nil {
 				t.Fatalf("Failed to init git repo: %v", err)
 			}
 
-			cfg := &Config{
+			cfg := &cmd.Config{
 				ProjectName: "test-project",
 				SkipGit:     false,
 				SkipGitUser: false,
@@ -434,9 +436,9 @@ func TestConfigureGitUserInteractive(t *testing.T) {
 
 			if !tt.shouldErr {
 				// Verify config was set
-				cmd := exec.Command("git", "config", "user.name")
-				cmd.Dir = tmpDir
-				output, err := cmd.Output()
+				gitCmd := exec.Command("git", "config", "user.name")
+				gitCmd.Dir = tmpDir
+				output, err := gitCmd.Output()
 				if err != nil {
 					t.Errorf("Failed to get user.name: %v", err)
 					return
@@ -446,9 +448,9 @@ func TestConfigureGitUserInteractive(t *testing.T) {
 					t.Errorf("user.name = %q, want %q", actual, tt.userName)
 				}
 
-				cmd = exec.Command("git", "config", "user.email")
-				cmd.Dir = tmpDir
-				output, err = cmd.Output()
+gitCmd = exec.Command("git", "config", "user.email")
+				gitCmd.Dir = tmpDir
+				output, err = gitCmd.Output()
 				if err != nil {
 					t.Errorf("Failed to get user.email: %v", err)
 					return
@@ -471,13 +473,13 @@ func TestConfigureGitUserSkipFlag(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Initialize git repo
-	cmd := exec.Command("git", "init")
-	cmd.Dir = tmpDir
-	if err := cmd.Run(); err != nil {
+	gitCmd := exec.Command("git", "init")
+	gitCmd.Dir = tmpDir
+	if err := gitCmd.Run(); err != nil {
 		t.Fatalf("Failed to init git repo: %v", err)
 	}
 
-	cfg := &Config{
+	cfg := &cmd.Config{
 		ProjectName: "test-project",
 		SkipGit:     false,
 		SkipGitUser: true,
@@ -491,9 +493,9 @@ func TestConfigureGitUserSkipFlag(t *testing.T) {
 	}
 
 	// Verify no local config was set (use --local to avoid falling back to global)
-	cmd = exec.Command("git", "config", "--local", "user.name")
-	cmd.Dir = tmpDir
-	_, err = cmd.Output()
+gitCmd = exec.Command("git", "config", "--local", "user.name")
+	gitCmd.Dir = tmpDir
+	_, err = gitCmd.Output()
 	if err == nil {
 		t.Errorf("Expected no local user.name config when SkipGitUser is true")
 	}
@@ -530,13 +532,13 @@ func TestConfigureGitUserNonInteractive(t *testing.T) {
 			defer os.RemoveAll(tmpDir)
 
 			// Initialize git repo
-			cmd := exec.Command("git", "init")
-			cmd.Dir = tmpDir
-			if err := cmd.Run(); err != nil {
+			gitCmd := exec.Command("git", "init")
+			gitCmd.Dir = tmpDir
+			if err := gitCmd.Run(); err != nil {
 				t.Fatalf("Failed to init git repo: %v", err)
 			}
 
-			cfg := &Config{
+			cfg := &cmd.Config{
 				ProjectName: "test-project",
 				SkipGit:     false,
 				SkipGitUser: false,
@@ -553,9 +555,9 @@ func TestConfigureGitUserNonInteractive(t *testing.T) {
 
 			if !tt.shouldErr {
 				// Verify config was set
-				cmd := exec.Command("git", "config", "user.name")
-				cmd.Dir = tmpDir
-				output, err := cmd.Output()
+				gitCmd := exec.Command("git", "config", "user.name")
+				gitCmd.Dir = tmpDir
+				output, err := gitCmd.Output()
 				if err != nil {
 					t.Errorf("Failed to get user.name: %v", err)
 					return
@@ -565,9 +567,9 @@ func TestConfigureGitUserNonInteractive(t *testing.T) {
 					t.Errorf("user.name = %q, want %q", actual, tt.gitName)
 				}
 
-				cmd = exec.Command("git", "config", "user.email")
-				cmd.Dir = tmpDir
-				output, err = cmd.Output()
+gitCmd = exec.Command("git", "config", "user.email")
+				gitCmd.Dir = tmpDir
+				output, err = gitCmd.Output()
 				if err != nil {
 					t.Errorf("Failed to get user.email: %v", err)
 					return

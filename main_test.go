@@ -1,6 +1,7 @@
 package main
 
 import (
+	"maajise/cmd"
 	"os"
 	"strings"
 	"testing"
@@ -138,12 +139,12 @@ func TestFileExists(t *testing.T) {
 func TestCheckDependencies(t *testing.T) {
 	tests := []struct {
 		name    string
-		cfg     *Config
+		cfg     *cmd.Config
 		wantErr bool
 	}{
 		{
 			name: "skip all dependencies",
-			cfg: &Config{
+			cfg: &cmd.Config{
 				SkipGit:   true,
 				SkipBeads: true,
 			},
@@ -151,7 +152,7 @@ func TestCheckDependencies(t *testing.T) {
 		},
 		{
 			name: "skip git",
-			cfg: &Config{
+			cfg: &cmd.Config{
 				SkipGit:   true,
 				SkipBeads: false,
 			},
@@ -159,7 +160,7 @@ func TestCheckDependencies(t *testing.T) {
 		},
 		{
 			name: "skip beads",
-			cfg: &Config{
+			cfg: &cmd.Config{
 				SkipGit:   false,
 				SkipBeads: true,
 			},
