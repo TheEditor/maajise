@@ -64,6 +64,7 @@ maajise my-project -v
 ```
 --in-place          Initialize current directory (no nested folders)
 --no-overwrite      Skip files that already exist
+--template=<name>   Project template (base, typescript, python, rust, php, go)
 --skip-git          Don't initialize Git
 --skip-beads        Don't initialize Beads
 --skip-commit       Don't create initial commit
@@ -72,11 +73,47 @@ maajise my-project -v
 -h, --help          Show help
 ```
 
+## Templates
+
+Maajise supports multiple project templates:
+
+| Template   | Description                          |
+|------------|--------------------------------------|
+| base       | Language-agnostic project structure  |
+| typescript | TypeScript with npm/package.json     |
+| python     | Python with pip/pyproject.toml       |
+| rust       | Rust with Cargo                      |
+| php        | PHP with Composer                    |
+| go         | Go with go.mod                       |
+
+### Using Templates
+
+```bash
+# List available templates
+maajise templates
+
+# Create project with specific template
+maajise my-app --template=typescript
+maajise my-service --template=python
+maajise my-tool --template=rust
+maajise my-project --template=php
+maajise my-cli --template=go
+```
+
 ## Examples
 
 ```bash
-# Standard new project
+# Standard new project (default template)
 maajise awesome-app
+
+# TypeScript project
+maajise my-app --template=typescript
+
+# Python service
+maajise my-service --template=python
+
+# Rust CLI tool
+maajise my-tool --template=rust
 
 # Initialize maajise itself
 cd maajise

@@ -10,24 +10,29 @@ import (
 	"strings"
 
 	"maajise/internal/beads"
+	"maajise/internal/config"
 	"maajise/internal/git"
+	"maajise/internal/ui"
 	"maajise/internal/validate"
+	"maajise/templates"
 )
 
 type InitCommand struct {
-	fs     *flag.FlagSet
-	config Config
+	fs       *flag.FlagSet
+	config   config.Config
+	template string
 }
 
 func NewInitCommand() *InitCommand {
 	ic := &InitCommand{
 		fs:     flag.NewFlagSet("init", flag.ContinueOnError),
-		config: DefaultConfig(),
+		config: config.DefaultConfig(),
 	}
 
 	// Define flags
 	ic.fs.BoolVar(&ic.config.InPlace, "in-place", false, "Initialize in current directory")
 	ic.fs.BoolVar(&ic.config.NoOverwrite, "no-overwrite", false, "Don't overwrite existing files")
+	ic.fs.StringVar(&ic.template, "template", "base", "Project template (base, typescript, python, rust, php, go)")
 	ic.fs.BoolVar(&ic.config.SkipGit, "skip-git", false, "Skip Git initialization")
 	ic.fs.BoolVar(&ic.config.SkipBeads, "skip-beads", false, "Skip Beads initialization")
 	ic.fs.BoolVar(&ic.config.SkipCommit, "skip-commit", false, "Skip initial commit")
@@ -56,8 +61,9 @@ func (ic *InitCommand) Usage() string {
 func (ic *InitCommand) Examples() []string {
 	return []string{
 		"maajise init my-project",
-		"maajise init --in-place",
-		"maajise init my-project --no-git",
+		"maajise init my-project --template=typescript",
+		"maajise init my-service --template=python",
+		"maajise init --in-place --template=rust",
 	}
 }
 
@@ -125,10 +131,10 @@ func (ic *InitCommand) runInit() error {
 	// Initialize Beads
 	ic.initBeads(repoPath)
 
-	// Create standard files
-	ic.createUbsignore(repoPath)
-	ic.createGitignore(repoPath)
-	ic.createReadme(repoPath)
+	// Create standard files from template
+	if err := ic.createFiles(repoPath); err != nil {
+		return err
+	}
 
 	// Initial commit
 	if err := ic.createInitialCommit(repoPath); err != nil {
@@ -152,13 +158,13 @@ func (ic *InitCommand) createStructure() (string, error) {
 			return "", err
 		}
 		if ic.config.Verbose {
-			fmt.Printf("→ Using current directory: %s\n", cwd)
+			ui.Info(fmt.Sprintf("Using current directory: %s", cwd))
 		}
 		return cwd, nil
 	}
 
 	// Standard mode: create nested structure
-	fmt.Println("→ Creating directory structure...")
+	ui.Info("Creating directory structure...")
 	innerPath := filepath.Join(ic.config.ProjectName, ic.config.ProjectName)
 
 	if ic.fileExists(ic.config.ProjectName) {
@@ -169,7 +175,7 @@ func (ic *InitCommand) createStructure() (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("✓ Created %s/\n", innerPath)
+	ui.Success(fmt.Sprintf("Created %s/", innerPath))
 	return innerPath, nil
 }
 
@@ -181,7 +187,7 @@ func (ic *InitCommand) fileExists(path string) bool {
 func (ic *InitCommand) initGit(repoDir string) error {
 	if ic.config.SkipGit {
 		if ic.config.Verbose {
-			fmt.Println("→ Skipping Git (--skip-git)")
+			ui.Info("Skipping Git (--skip-git)")
 		}
 		return nil
 	}
@@ -196,7 +202,7 @@ func (ic *InitCommand) initGit(repoDir string) error {
 func (ic *InitCommand) configureGitUser(repoDir string) error {
 	if ic.config.SkipGit || ic.config.SkipGitUser {
 		if ic.config.Verbose {
-			fmt.Println("→ Skipping Git user configuration")
+			ui.Info("Skipping Git user configuration")
 		}
 		return nil
 	}
@@ -214,11 +220,11 @@ func (ic *InitCommand) configureGitUser(repoDir string) error {
 		}
 
 		if ic.config.Verbose {
-			fmt.Printf("→ Using provided Git config: %s <%s>\n", userName, userEmail)
+			ui.Info(fmt.Sprintf("Using provided Git config: %s <%s>", userName, userEmail))
 		}
 	} else {
 		// Interactive prompts
-		fmt.Println("→ Configuring Git user...")
+		ui.Info("Configuring Git user...")
 		fmt.Println()
 
 		reader := bufio.NewReader(os.Stdin)
@@ -264,7 +270,7 @@ func (ic *InitCommand) configureGitUser(repoDir string) error {
 		return err
 	}
 
-	fmt.Printf("✓ Git user configured: %s <%s>\n", userName, userEmail)
+	ui.Success(fmt.Sprintf("Git user configured: %s <%s>", userName, userEmail))
 	fmt.Println()
 	return nil
 }
@@ -272,239 +278,68 @@ func (ic *InitCommand) configureGitUser(repoDir string) error {
 func (ic *InitCommand) initBeads(repoDir string) {
 	if ic.config.SkipBeads {
 		if ic.config.Verbose {
-			fmt.Println("→ Skipping Beads (--skip-beads)")
+			ui.Info("Skipping Beads (--skip-beads)")
 		}
 		return
 	}
 
 	if err := beads.Init(repoDir, ic.config.Verbose); err != nil {
-		fmt.Println("⚠ Beads init failed (run 'bd init' manually)")
+		ui.Warn("Beads init failed (run 'bd init' manually)")
 		return
 	}
+}
+
+func (ic *InitCommand) createFiles(repoDir string) error {
+	tmpl, ok := templates.Get(ic.template)
+	if !ok {
+		return fmt.Errorf("unknown template: %s (use 'maajise templates' to list available)", ic.template)
+	}
+
+	files := tmpl.Files(ic.config.ProjectName)
+	for filename, content := range files {
+		path := filepath.Join(repoDir, filename)
+		if err := ic.writeFileIfNotExists(path, content); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (ic *InitCommand) writeFileIfNotExists(path, content string) error {
 	if ic.fileExists(path) {
 		if ic.config.NoOverwrite {
-			fmt.Printf("⚠ Skipped %s (exists, --no-overwrite)\n", filepath.Base(path))
+			ui.Warn(fmt.Sprintf("Skipped %s (exists, --no-overwrite)", filepath.Base(path)))
 			return nil
 		}
-		fmt.Printf("⚠ Overwriting %s\n", filepath.Base(path))
+		ui.Warn(fmt.Sprintf("Overwriting %s", filepath.Base(path)))
+	}
+
+	// Create parent directories if needed
+	dir := filepath.Dir(path)
+	if dir != "." && dir != "" {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return fmt.Errorf("failed to create directory %s: %w", dir, err)
+		}
 	}
 
 	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
 		return err
 	}
 
-	fmt.Printf("✓ Created %s\n", filepath.Base(path))
+	ui.Success(fmt.Sprintf("Created %s", path))
 	return nil
 }
 
-func (ic *InitCommand) createUbsignore(repoDir string) {
-	fmt.Println("→ Creating .ubsignore...")
-
-	content := `# UBS Scanner Ignore File
-# Excludes non-source files from bug scanning
-
-# Dependencies
-node_modules/
-vendor/
-packages/
-
-# Build outputs
-.next/
-build/
-dist/
-target/
-out/
-bin/
-obj/
-
-# Version control & IDE
-.git/
-.vscode/
-.idea/
-.beads/
-.claude/
-
-# Documentation & metadata
-docs/
-history/
-openspec/
-
-# Scripts (usually not app code)
-scripts/
-
-# Static assets
-public/
-static/
-assets/
-
-# File types to skip
-*.md
-*.json
-*.config.*
-*.log
-*.txt
-*.lock
-*.sum
-
-# Environment & secrets
-.env*
-*.key
-*.pem
-*.cert
-`
-
-	path := filepath.Join(repoDir, ".ubsignore")
-	_ = ic.writeFileIfNotExists(path, content)
-}
-
-func (ic *InitCommand) createGitignore(repoDir string) {
-	fmt.Println("→ Creating .gitignore...")
-
-	content := `# Dependencies
-node_modules/
-vendor/
-packages/
-
-# Build outputs
-.next/
-build/
-dist/
-target/
-out/
-*.o
-*.exe
-
-# Logs
-*.log
-logs/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Environment variables
-.env
-.env.local
-.env*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Testing
-coverage/
-.nyc_output/
-
-# Temporary files
-*.tmp
-*.temp
-.cache/
-`
-
-	path := filepath.Join(repoDir, ".gitignore")
-	_ = ic.writeFileIfNotExists(path, content)
-}
-
-func (ic *InitCommand) createReadme(repoDir string) {
-	fmt.Println("→ Creating README.md...")
-
-	content := fmt.Sprintf(`# %s
-
-## Description
-
-[Add project description here]
-
-## Setup
-
-`+"```bash"+`
-# Clone the repository
-git clone <repository-url>
-cd %s
-
-# [Add setup instructions here]
-`+"```"+`
-
-## Usage
-
-[Add usage instructions here]
-
-## Development
-
-### Prerequisites
-
-- [List prerequisites here]
-
-### Running Locally
-
-`+"```bash"+`
-# [Add development commands here]
-`+"```"+`
-
-### Testing
-
-`+"```bash"+`
-# [Add testing commands here]
-`+"```"+`
-
-## Issue Tracking
-
-This project uses [Beads](https://github.com/jfischoff/beads) for issue tracking.
-
-`+"```bash"+`
-# View all issues
-bd list
-
-# Create new issue
-bd create --title "Issue title" --description "Issue description"
-
-# View issue details
-bd show <issue-id>
-`+"```"+`
-
-## Code Quality
-
-This project uses [UBS (Ultimate Bug Scanner)](https://github.com/Dicklesworthstone/ultimate_bug_scanner) for static analysis.
-
-`+"```bash"+`
-# Run scanner on source code
-ubs .
-
-# Run with strict mode (fail on warnings)
-ubs . --fail-on-warning
-`+"```"+`
-
-## Contributing
-
-[Add contribution guidelines here]
-
-## License
-
-[Add license information here]
-`, ic.config.ProjectName, ic.config.ProjectName)
-
-	path := filepath.Join(repoDir, "README.md")
-	_ = ic.writeFileIfNotExists(path, content)
-}
 
 func (ic *InitCommand) createInitialCommit(repoDir string) error {
 	if ic.config.SkipGit || ic.config.SkipCommit {
 		if ic.config.Verbose {
-			fmt.Println("→ Skipping initial commit")
+			ui.Info("Skipping initial commit")
 		}
 		return nil
 	}
 
-	fmt.Println("→ Creating initial commit...")
+	ui.Info("Creating initial commit...")
 
 	// Check if there's anything to commit
 	hasChanges, err := git.HasChanges(repoDir)
@@ -513,12 +348,20 @@ func (ic *InitCommand) createInitialCommit(repoDir string) error {
 	}
 
 	if !hasChanges {
-		fmt.Println("⚠ Nothing to commit")
+		ui.Warn("Nothing to commit")
 		return nil
 	}
 
+	// Get files from template
+	tmpl, _ := templates.Get(ic.template)
+	files := tmpl.Files(ic.config.ProjectName)
+	fileList := make([]string, 0, len(files))
+	for filename := range files {
+		fileList = append(fileList, filename)
+	}
+
 	// Add files
-	if err := git.AddFiles(repoDir, []string{".ubsignore", ".gitignore", "README.md"}, ic.config.Verbose); err != nil {
+	if err := git.AddFiles(repoDir, fileList, ic.config.Verbose); err != nil {
 		return err
 	}
 
@@ -534,14 +377,14 @@ func (ic *InitCommand) createInitialCommit(repoDir string) error {
 		return err
 	}
 
-	fmt.Println("✓ Initial commit created")
+	ui.Success("Initial commit created")
 	return nil
 }
 
 func (ic *InitCommand) setupGitRemote(repoDir string) {
 	if ic.config.SkipGit || ic.config.SkipRemote {
 		if ic.config.Verbose {
-			fmt.Println("→ Skipping remote setup")
+			ui.Info("Skipping remote setup")
 		}
 		return
 	}
@@ -550,12 +393,12 @@ func (ic *InitCommand) setupGitRemote(repoDir string) {
 	existingURL, err := git.GetRemote(repoDir, "origin")
 	if err == nil {
 		// Remote already exists
-		fmt.Printf("⚠ Remote 'origin' already exists: %s\n", existingURL)
+		ui.Warn(fmt.Sprintf("Remote 'origin' already exists: %s", existingURL))
 		return
 	}
 
 	fmt.Println()
-	fmt.Println("→ Git remote setup (optional)")
+	ui.Info("Git remote setup (optional)")
 	fmt.Println()
 
 	reader := bufio.NewReader(os.Stdin)
@@ -567,12 +410,12 @@ func (ic *InitCommand) setupGitRemote(repoDir string) {
 	response = strings.TrimSpace(response)
 
 	if strings.ToLower(response) != "y" {
-		fmt.Println("→ Skipped remote setup")
+		ui.Info("Skipped remote setup")
 		return
 	}
 
 	fmt.Println()
-	fmt.Printf("→ Enter remote URL (e.g., https://github.com/username/%s.git)\n", ic.config.ProjectName)
+	ui.Info(fmt.Sprintf("Enter remote URL (e.g., https://github.com/username/%s.git)", ic.config.ProjectName))
 	fmt.Print("→ Remote URL: ")
 	remoteURL, err := reader.ReadString('\n')
 	if err != nil {
@@ -581,24 +424,24 @@ func (ic *InitCommand) setupGitRemote(repoDir string) {
 	remoteURL = strings.TrimSpace(remoteURL)
 
 	if remoteURL == "" {
-		fmt.Println("→ Skipped remote setup")
+		ui.Info("Skipped remote setup")
 		return
 	}
 
 	// Validate the git remote URL
 	if err := validate.ValidateGitURL(remoteURL); err != nil {
-		fmt.Printf("✗ Invalid git remote URL: %v\n", err)
+		ui.Error(fmt.Sprintf("Invalid git remote URL: %v", err))
 		return
 	}
 
 	if err := git.AddRemote(repoDir, "origin", remoteURL, ic.config.Verbose); err != nil {
-		fmt.Println("⚠ Failed to add remote (may already exist)")
+		ui.Warn("Failed to add remote (may already exist)")
 		return
 	}
 
-	fmt.Printf("✓ Added remote: origin → %s\n", remoteURL)
+	ui.Success(fmt.Sprintf("Added remote: origin → %s", remoteURL))
 	fmt.Println()
-	fmt.Println("→ Push to remote with:")
+	ui.Info("Push to remote with:")
 	if ic.config.InPlace {
 		fmt.Println("  git push -u origin main")
 	} else {
@@ -609,28 +452,26 @@ func (ic *InitCommand) setupGitRemote(repoDir string) {
 }
 
 func (ic *InitCommand) showSummary(repoPath string) {
-	fmt.Println()
-	fmt.Println("╔═══════════════════════════════════════════════════════════╗")
-	fmt.Println("║  ✓ Repository initialized successfully!                   ║")
-	fmt.Println("╚═══════════════════════════════════════════════════════════╝")
-	fmt.Println()
-	fmt.Printf("✓ Project: %s\n", ic.config.ProjectName)
-	fmt.Printf("✓ Location: %s\n", repoPath)
-	fmt.Println()
+	ui.Summary(
+		"✓ Repository initialized successfully!",
+		"",
+		fmt.Sprintf("Project: %s", ic.config.ProjectName),
+		fmt.Sprintf("Location: %s", repoPath),
+	)
 
 	if !ic.config.InPlace {
-		fmt.Println("→ Next steps:")
+		ui.Info("Next steps:")
 		fmt.Printf("  1. cd %s/%s\n", ic.config.ProjectName, ic.config.ProjectName)
 		fmt.Println("  2. Create your project files")
 	} else {
-		fmt.Println("→ Next steps:")
+		ui.Info("Next steps:")
 		fmt.Println("  1. Create your project files")
 	}
 
 	fmt.Println("  2. Run 'ubs .' to scan for issues")
 	fmt.Println("  3. Run 'bd list' to manage tasks")
 	fmt.Println()
-	fmt.Println("→ Quick commands:")
+	ui.Info("Quick commands:")
 	fmt.Println("  bd create --title \"Task name\"    # Create new task")
 	fmt.Println("  bd list                           # View all tasks")
 	fmt.Println("  ubs .                             # Scan for bugs")
