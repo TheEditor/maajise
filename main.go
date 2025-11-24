@@ -24,6 +24,16 @@ func main() {
 		os.Exit(0)
 	}
 
+	// Handle version flags
+	if cmdName == "-v" || cmdName == "--version" || cmdName == "version" {
+		if vc, ok := cmd.Get("version"); ok {
+			vc.Execute([]string{})
+		} else {
+			fmt.Printf("Maajise v%s\n", VERSION)
+		}
+		os.Exit(0)
+	}
+
 	// Try to get the command
 	command, ok := cmd.Get(cmdName)
 	if !ok {
@@ -60,7 +70,8 @@ Commands:
 	}
 	fmt.Println()
 	fmt.Println("Flags:")
-	fmt.Println("  -h, --help  Show this help")
+	fmt.Println("  -h, --help     Show this help")
+	fmt.Println("  -v, --version  Show version")
 	fmt.Println()
 	fmt.Println("Examples:")
 	fmt.Println("  maajise init my-project")
