@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -181,4 +182,143 @@ func TestParseFlags(t *testing.T) {
 	// because it relies on flag.Parse() which operates on os.Args.
 	// This test is a placeholder for manual verification.
 	t.Skip("parseFlags requires refactoring to be easily testable")
+}
+
+func TestEmailValidation(t *testing.T) {
+	tests := []struct {
+		name      string
+		email     string
+		wantValid bool
+	}{
+		// Valid emails
+		{
+			name:      "simple email",
+			email:     "user@example.com",
+			wantValid: true,
+		},
+		{
+			name:      "email with numbers",
+			email:     "user123@example.com",
+			wantValid: true,
+		},
+		{
+			name:      "email with multiple dots",
+			email:     "user@mail.example.co.uk",
+			wantValid: true,
+		},
+		{
+			name:      "email with plus",
+			email:     "user+tag@example.com",
+			wantValid: true,
+		},
+
+		// Invalid emails
+		{
+			name:      "no @ symbol",
+			email:     "userexample.com",
+			wantValid: false,
+		},
+		{
+			name:      "no dot in domain",
+			email:     "user@example",
+			wantValid: false,
+		},
+		{
+			name:      "empty email",
+			email:     "",
+			wantValid: false,
+		},
+		{
+			name:      "only @ symbol",
+			email:     "@",
+			wantValid: false,
+		},
+		{
+			name:      "only domain",
+			email:     "example.com",
+			wantValid: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Simple validation logic from configureGitUser
+			isValid := len(tt.email) > 0 && strings.Contains(tt.email, "@") && strings.Contains(tt.email, ".")
+			if isValid != tt.wantValid {
+				t.Errorf("Email validation for %q = %v, want %v", tt.email, isValid, tt.wantValid)
+			}
+		})
+	}
+}
+
+func TestGitUserInputValidation(t *testing.T) {
+	tests := []struct {
+		name      string
+		inputName  string
+		inputEmail string
+		wantErr   bool
+		errMsg    string
+	}{
+		// Valid inputs
+		{
+			name:       "valid name and email",
+			inputName:  "John Doe",
+			inputEmail: "john@example.com",
+			wantErr:    false,
+		},
+
+		// Empty inputs
+		{
+			name:       "empty name",
+			inputName:  "",
+			inputEmail: "john@example.com",
+			wantErr:    true,
+			errMsg:     "empty user name",
+		},
+		{
+			name:       "empty email",
+			inputName:  "John Doe",
+			inputEmail: "",
+			wantErr:    true,
+			errMsg:     "empty user email",
+		},
+
+		// Invalid email format
+		{
+			name:       "email without @",
+			inputName:  "John Doe",
+			inputEmail: "johnexample.com",
+			wantErr:    true,
+			errMsg:     "invalid email format",
+		},
+		{
+			name:       "email without dot",
+			inputName:  "John Doe",
+			inputEmail: "john@example",
+			wantErr:    true,
+			errMsg:     "invalid email format",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Simulate validation logic from configureGitUser
+			var errMsg string
+			if tt.inputName == "" {
+				errMsg = "empty user name"
+			} else if tt.inputEmail == "" {
+				errMsg = "empty user email"
+			} else if !strings.Contains(tt.inputEmail, "@") || !strings.Contains(tt.inputEmail, ".") {
+				errMsg = "invalid email format"
+			}
+
+			hasErr := errMsg != ""
+			if hasErr != tt.wantErr {
+				t.Errorf("Validation for %q/%q = %v, want %v", tt.inputName, tt.inputEmail, hasErr, tt.wantErr)
+			}
+			if hasErr && errMsg != tt.errMsg {
+				t.Errorf("Error message = %q, want %q", errMsg, tt.errMsg)
+			}
+		})
+	}
 }

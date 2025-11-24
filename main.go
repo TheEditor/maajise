@@ -33,6 +33,9 @@ type Config struct {
 	SkipBeads    bool
 	SkipCommit   bool
 	SkipRemote   bool
+	SkipGitUser  bool
+	GitName      string
+	GitEmail     string
 	Verbose      bool
 }
 
@@ -66,6 +69,9 @@ Flags:
   --skip-beads        Don't initialize Beads
   --skip-commit       Don't create initial commit
   --skip-remote       Don't prompt for remote setup
+  --skip-git-user     Don't prompt for Git user config
+  --git-name NAME     Set Git user.name (non-interactive)
+  --git-email EMAIL   Set Git user.email (non-interactive)
   -v, --verbose       Verbose output
   -h, --help          Show this help
 
@@ -106,6 +112,9 @@ func parseFlags() *Config {
 	flag.BoolVar(&cfg.SkipBeads, "skip-beads", false, "Skip Beads initialization")
 	flag.BoolVar(&cfg.SkipCommit, "skip-commit", false, "Skip initial commit")
 	flag.BoolVar(&cfg.SkipRemote, "skip-remote", false, "Skip remote setup")
+	flag.BoolVar(&cfg.SkipGitUser, "skip-git-user", false, "Skip Git user configuration")
+	flag.StringVar(&cfg.GitName, "git-name", "", "Git user.name (non-interactive)")
+	flag.StringVar(&cfg.GitEmail, "git-email", "", "Git user.email (non-interactive)")
 	flag.BoolVar(&cfg.Verbose, "v", false, "Verbose output")
 	flag.BoolVar(&cfg.Verbose, "verbose", false, "Verbose output")
 
@@ -250,6 +259,100 @@ func initGit(repoDir string, cfg *Config) error {
 	}
 
 	success("Git initialized")
+	return nil
+}
+
+func configureGitUser(repoDir string, cfg *Config) error {
+	if cfg.SkipGit || cfg.SkipGitUser {
+		if cfg.Verbose {
+			info("Skipping Git user configuration")
+		}
+		return nil
+	}
+
+	var userName, userEmail string
+
+	// Check if values provided via flags
+	if cfg.GitName != "" && cfg.GitEmail != "" {
+		userName = cfg.GitName
+		userEmail = cfg.GitEmail
+
+		// Validate email format
+		if !strings.Contains(userEmail, "@") || !strings.Contains(userEmail, ".") {
+			errorMsg("Invalid email format")
+			return fmt.Errorf("invalid email format")
+		}
+
+		if cfg.Verbose {
+			info(fmt.Sprintf("Using provided Git config: %s <%s>", userName, userEmail))
+		}
+	} else {
+		// Interactive prompts
+		info("Configuring Git user...")
+		fmt.Println()
+
+		reader := bufio.NewReader(os.Stdin)
+
+		// Get user.name
+		fmt.Printf("%s→%s Git user.name (full name): ", blue, reset)
+		var err error
+		userName, err = reader.ReadString('\n')
+		if err != nil {
+			return fmt.Errorf("failed to read user name: %w", err)
+		}
+		userName = strings.TrimSpace(userName)
+
+		if userName == "" {
+			errorMsg("Git user.name cannot be empty")
+			return fmt.Errorf("empty user name")
+		}
+
+		// Get user.email
+		fmt.Printf("%s→%s Git user.email (email address): ", blue, reset)
+		userEmail, err = reader.ReadString('\n')
+		if err != nil {
+			return fmt.Errorf("failed to read user email: %w", err)
+		}
+		userEmail = strings.TrimSpace(userEmail)
+
+		if userEmail == "" {
+			errorMsg("Git user.email cannot be empty")
+			return fmt.Errorf("empty user email")
+		}
+
+		// Validate email format (basic check)
+		if !strings.Contains(userEmail, "@") || !strings.Contains(userEmail, ".") {
+			errorMsg("Invalid email format")
+			return fmt.Errorf("invalid email format")
+		}
+	}
+
+	// Set user.name
+	nameCmd := exec.Command("git", "config", "user.name", userName)
+	nameCmd.Dir = repoDir
+	if cfg.Verbose {
+		nameCmd.Stdout = os.Stdout
+		nameCmd.Stderr = os.Stderr
+	}
+	if err := nameCmd.Run(); err != nil {
+		errorMsg("Failed to set user.name")
+		return err
+	}
+
+	// Set user.email
+	emailCmd := exec.Command("git", "config", "user.email", userEmail)
+	emailCmd.Dir = repoDir
+	if cfg.Verbose {
+		emailCmd.Stdout = os.Stdout
+		emailCmd.Stderr = os.Stderr
+	}
+	if err := emailCmd.Run(); err != nil {
+		errorMsg("Failed to set user.email")
+		return err
+	}
+
+	success(fmt.Sprintf("Git user configured: %s <%s>", userName, userEmail))
+	fmt.Println()
 	return nil
 }
 
@@ -705,6 +808,11 @@ func main() {
 
 	// Initialize Git
 	if err := initGit(repoPath, cfg); err != nil {
+		os.Exit(1)
+	}
+
+	// Configure Git user
+	if err := configureGitUser(repoPath, cfg); err != nil {
 		os.Exit(1)
 	}
 

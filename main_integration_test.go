@@ -362,3 +362,221 @@ func TestSetupGitRemoteNoAnswer(t *testing.T) {
 		t.Errorf("Expected no remote to be added when user declines")
 	}
 }
+
+func TestConfigureGitUserInteractive(t *testing.T) {
+	tests := []struct {
+		name      string
+		userName  string
+		userEmail string
+		shouldErr bool
+	}{
+		{
+			name:      "valid interactive input",
+			userName:  "John Doe",
+			userEmail: "john@example.com",
+			shouldErr: false,
+		},
+		{
+			name:      "valid with special chars in name",
+			userName:  "Mary O'Connor",
+			userEmail: "mary@example.co.uk",
+			shouldErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a temporary git repository
+			tmpDir, err := os.MkdirTemp("", "test-git-user")
+			if err != nil {
+				t.Fatalf("Failed to create temp dir: %v", err)
+			}
+			defer os.RemoveAll(tmpDir)
+
+			// Initialize git repo
+			cmd := exec.Command("git", "init")
+			cmd.Dir = tmpDir
+			if err := cmd.Run(); err != nil {
+				t.Fatalf("Failed to init git repo: %v", err)
+			}
+
+			cfg := &Config{
+				ProjectName: "test-project",
+				SkipGit:     false,
+				SkipGitUser: false,
+				Verbose:     false,
+			}
+
+			// Mock stdin
+			oldStdin := os.Stdin
+			defer func() { os.Stdin = oldStdin }()
+
+			r, w, err := os.Pipe()
+			if err != nil {
+				t.Fatalf("Failed to create pipe: %v", err)
+			}
+			defer r.Close()
+
+			// Write test input
+			if _, err := w.WriteString(tt.userName + "\n" + tt.userEmail + "\n"); err != nil {
+				t.Fatalf("Failed to write to pipe: %v", err)
+			}
+			w.Close()
+
+			os.Stdin = r
+
+			// Call configureGitUser
+			err = configureGitUser(tmpDir, cfg)
+
+			if (err != nil) != tt.shouldErr {
+				t.Errorf("configureGitUser() error = %v, shouldErr %v", err, tt.shouldErr)
+			}
+
+			if !tt.shouldErr {
+				// Verify config was set
+				cmd := exec.Command("git", "config", "user.name")
+				cmd.Dir = tmpDir
+				output, err := cmd.Output()
+				if err != nil {
+					t.Errorf("Failed to get user.name: %v", err)
+					return
+				}
+				actual := string(bytes.TrimSpace(output))
+				if actual != tt.userName {
+					t.Errorf("user.name = %q, want %q", actual, tt.userName)
+				}
+
+				cmd = exec.Command("git", "config", "user.email")
+				cmd.Dir = tmpDir
+				output, err = cmd.Output()
+				if err != nil {
+					t.Errorf("Failed to get user.email: %v", err)
+					return
+				}
+				actual = string(bytes.TrimSpace(output))
+				if actual != tt.userEmail {
+					t.Errorf("user.email = %q, want %q", actual, tt.userEmail)
+				}
+			}
+		})
+	}
+}
+
+func TestConfigureGitUserSkipFlag(t *testing.T) {
+	// Create a temporary git repository
+	tmpDir, err := os.MkdirTemp("", "test-git-skip")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Initialize git repo
+	cmd := exec.Command("git", "init")
+	cmd.Dir = tmpDir
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("Failed to init git repo: %v", err)
+	}
+
+	cfg := &Config{
+		ProjectName: "test-project",
+		SkipGit:     false,
+		SkipGitUser: true,
+		Verbose:     false,
+	}
+
+	// Should return nil without prompting
+	err = configureGitUser(tmpDir, cfg)
+	if err != nil {
+		t.Errorf("configureGitUser() with SkipGitUser should return nil, got %v", err)
+	}
+
+	// Verify no local config was set (use --local to avoid falling back to global)
+	cmd = exec.Command("git", "config", "--local", "user.name")
+	cmd.Dir = tmpDir
+	_, err = cmd.Output()
+	if err == nil {
+		t.Errorf("Expected no local user.name config when SkipGitUser is true")
+	}
+}
+
+func TestConfigureGitUserNonInteractive(t *testing.T) {
+	tests := []struct {
+		name      string
+		gitName   string
+		gitEmail  string
+		shouldErr bool
+	}{
+		{
+			name:      "valid non-interactive",
+			gitName:   "Dave Fobare",
+			gitEmail:  "dave.fobare@gmail.com",
+			shouldErr: false,
+		},
+		{
+			name:      "invalid email format",
+			gitName:   "John Doe",
+			gitEmail:  "invalid-email",
+			shouldErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a temporary git repository
+			tmpDir, err := os.MkdirTemp("", "test-git-nonint")
+			if err != nil {
+				t.Fatalf("Failed to create temp dir: %v", err)
+			}
+			defer os.RemoveAll(tmpDir)
+
+			// Initialize git repo
+			cmd := exec.Command("git", "init")
+			cmd.Dir = tmpDir
+			if err := cmd.Run(); err != nil {
+				t.Fatalf("Failed to init git repo: %v", err)
+			}
+
+			cfg := &Config{
+				ProjectName: "test-project",
+				SkipGit:     false,
+				SkipGitUser: false,
+				GitName:     tt.gitName,
+				GitEmail:    tt.gitEmail,
+				Verbose:     false,
+			}
+
+			err = configureGitUser(tmpDir, cfg)
+
+			if (err != nil) != tt.shouldErr {
+				t.Errorf("configureGitUser() error = %v, shouldErr %v", err, tt.shouldErr)
+			}
+
+			if !tt.shouldErr {
+				// Verify config was set
+				cmd := exec.Command("git", "config", "user.name")
+				cmd.Dir = tmpDir
+				output, err := cmd.Output()
+				if err != nil {
+					t.Errorf("Failed to get user.name: %v", err)
+					return
+				}
+				actual := string(bytes.TrimSpace(output))
+				if actual != tt.gitName {
+					t.Errorf("user.name = %q, want %q", actual, tt.gitName)
+				}
+
+				cmd = exec.Command("git", "config", "user.email")
+				cmd.Dir = tmpDir
+				output, err = cmd.Output()
+				if err != nil {
+					t.Errorf("Failed to get user.email: %v", err)
+					return
+				}
+				actual = string(bytes.TrimSpace(output))
+				if actual != tt.gitEmail {
+					t.Errorf("user.email = %q, want %q", actual, tt.gitEmail)
+				}
+			}
+		})
+	}
+}
