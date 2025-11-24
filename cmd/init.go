@@ -5,11 +5,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"maajise/internal/beads"
 	"maajise/internal/git"
 	"maajise/internal/validate"
 )
@@ -277,32 +277,10 @@ func (ic *InitCommand) initBeads(repoDir string) {
 		return
 	}
 
-	// Check if already initialized
-	beadsDir := filepath.Join(repoDir, ".beads")
-	if ic.fileExists(beadsDir) {
-		if ic.config.NoOverwrite {
-			fmt.Println("⚠ Beads already initialized (--no-overwrite)")
-			return
-		}
-		fmt.Println("⚠ Beads already initialized")
-		return
-	}
-
-	fmt.Println("→ Initializing Beads...")
-
-	cmd := exec.Command("bd", "init")
-	cmd.Dir = repoDir
-	if ic.config.Verbose {
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-	}
-
-	if err := cmd.Run(); err != nil {
+	if err := beads.Init(repoDir, ic.config.Verbose); err != nil {
 		fmt.Println("⚠ Beads init failed (run 'bd init' manually)")
 		return
 	}
-
-	fmt.Println("✓ Beads initialized")
 }
 
 func (ic *InitCommand) writeFileIfNotExists(path, content string) error {
