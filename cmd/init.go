@@ -11,6 +11,7 @@ import (
 
 	"maajise/internal/beads"
 	"maajise/internal/config"
+	"maajise/internal/fsutil"
 	"maajise/internal/git"
 	"maajise/internal/ui"
 	"maajise/internal/validate"
@@ -18,9 +19,12 @@ import (
 )
 
 type InitCommand struct {
-	fs       *flag.FlagSet
-	config   config.Config
-	template string
+	fs         *flag.FlagSet
+	config     config.Config
+	template   string
+	fileConfig *config.FileConfig
+	dryRun     bool
+	interactive bool
 }
 
 func NewInitCommand() *InitCommand {
@@ -29,10 +33,17 @@ func NewInitCommand() *InitCommand {
 		config: config.DefaultConfig(),
 	}
 
-	// Define flags
+	// Load file config and merge defaults BEFORE defining flags
+	// This way, flag defaults can reflect config file values
+	if fc, err := config.LoadFileConfig(); err == nil && fc != nil {
+		ic.config.MergeFileConfig(fc)
+		ic.fileConfig = fc // Store for template variables later
+	}
+
+	// Define flags (will use merged defaults)
 	ic.fs.BoolVar(&ic.config.InPlace, "in-place", false, "Initialize in current directory")
 	ic.fs.BoolVar(&ic.config.NoOverwrite, "no-overwrite", false, "Don't overwrite existing files")
-	ic.fs.StringVar(&ic.template, "template", "base", "Project template (base, typescript, python, rust, php, go)")
+	ic.fs.StringVar(&ic.template, "template", ic.config.Template, "Project template (base, typescript, python, rust, php, go)")
 	ic.fs.BoolVar(&ic.config.SkipGit, "skip-git", false, "Skip Git initialization")
 	ic.fs.BoolVar(&ic.config.SkipBeads, "skip-beads", false, "Skip Beads initialization")
 	ic.fs.BoolVar(&ic.config.SkipCommit, "skip-commit", false, "Skip initial commit")
@@ -40,6 +51,9 @@ func NewInitCommand() *InitCommand {
 	ic.fs.BoolVar(&ic.config.SkipGitUser, "skip-git-user", false, "Skip Git user configuration")
 	ic.fs.StringVar(&ic.config.GitName, "git-name", "", "Git user.name (non-interactive)")
 	ic.fs.StringVar(&ic.config.GitEmail, "git-email", "", "Git user.email (non-interactive)")
+	ic.fs.BoolVar(&ic.dryRun, "dry-run", false, "Preview what would be created without making changes")
+	ic.fs.BoolVar(&ic.interactive, "interactive", false, "Interactive mode with prompts")
+	ic.fs.BoolVar(&ic.interactive, "i", false, "Interactive mode with prompts")
 	ic.fs.BoolVar(&ic.config.Verbose, "v", false, "Verbose output")
 	ic.fs.BoolVar(&ic.config.Verbose, "verbose", false, "Verbose output")
 
@@ -62,7 +76,8 @@ func (ic *InitCommand) Examples() []string {
 	return []string{
 		"maajise init my-project",
 		"maajise init my-project --template=typescript",
-		"maajise init my-service --template=python",
+		"maajise init my-project --dry-run",
+		"maajise init --interactive",
 		"maajise init --in-place --template=rust",
 	}
 }
@@ -73,8 +88,29 @@ func (ic *InitCommand) Execute(args []string) error {
 		return err
 	}
 
-	// Get project name from remaining args
 	remainingArgs := ic.fs.Args()
+
+	// Auto-enter interactive mode if no project name and not in-place
+	if !ic.config.InPlace && len(remainingArgs) == 0 && !ic.interactive {
+		// Offer interactive mode
+		fmt.Println("No project name specified.")
+		fmt.Print("Enter interactive mode? (Y/n): ")
+		reader := bufio.NewReader(os.Stdin)
+		response, _ := reader.ReadString('\n')
+		response = strings.TrimSpace(strings.ToLower(response))
+		if response == "" || response == "y" || response == "yes" {
+			ic.interactive = true
+		} else {
+			return fmt.Errorf("project name required (or use --interactive)")
+		}
+	}
+
+	// Handle interactive mode
+	if ic.interactive {
+		return ic.runInteractive()
+	}
+
+	// Get project name from remaining args
 	if !ic.config.InPlace {
 		if len(remainingArgs) == 0 {
 			return fmt.Errorf("project name required")
@@ -94,7 +130,15 @@ func (ic *InitCommand) Execute(args []string) error {
 		return err
 	}
 
-	// Execute initialization
+	// Template from flag takes precedence
+	if ic.template == "" {
+		ic.template = "base" // Ultimate fallback
+	}
+
+	// Execute initialization or dry-run
+	if ic.dryRun {
+		return ic.runDryRun()
+	}
 	return ic.runInit()
 }
 
@@ -109,6 +153,191 @@ func (ic *InitCommand) validateProjectName(name string) error {
 	}
 
 	return nil
+}
+
+func (ic *InitCommand) runDryRun() error {
+	ui.Info("[dry-run] Preview of initialization:")
+	fmt.Println()
+
+	// Show directory structure
+	var targetDir string
+	if ic.config.InPlace {
+		cwd, _ := os.Getwd()
+		targetDir = cwd
+		ui.Info(fmt.Sprintf("[dry-run] Would initialize in: %s", targetDir))
+	} else {
+		targetDir = filepath.Join(ic.config.ProjectName, ic.config.ProjectName)
+		ui.Info(fmt.Sprintf("[dry-run] Would create directory: %s", targetDir))
+	}
+	fmt.Println()
+
+	// Show Git initialization
+	if !ic.config.SkipGit {
+		ui.Info("[dry-run] Would initialize Git repository")
+		if ic.config.GitName != "" && ic.config.GitEmail != "" {
+			fmt.Printf("         user.name: %s\n", ic.config.GitName)
+			fmt.Printf("         user.email: %s\n", ic.config.GitEmail)
+		} else {
+			fmt.Println("         (would prompt for user.name and user.email)")
+		}
+	}
+
+	// Show Beads initialization
+	if !ic.config.SkipBeads {
+		ui.Info("[dry-run] Would initialize Beads issue tracking")
+	}
+
+	// Show files from template
+	tmpl, ok := templates.Get(ic.template)
+	if !ok {
+		return fmt.Errorf("unknown template: %s", ic.template)
+	}
+
+	files := tmpl.Files(ic.config.ProjectName)
+
+	fmt.Println()
+	ui.Info(fmt.Sprintf("[dry-run] Would create files (template: %s):", ic.template))
+	for filename := range files {
+		fullPath := filepath.Join(targetDir, filename)
+		if fsutil.FileExists(fullPath) {
+			if ic.config.NoOverwrite {
+				fmt.Printf("         skip: %s (exists, --no-overwrite)\n", filename)
+			} else {
+				fmt.Printf("         overwrite: %s\n", filename)
+			}
+		} else {
+			fmt.Printf("         create: %s\n", filename)
+		}
+	}
+
+	// Show commit
+	if !ic.config.SkipGit && !ic.config.SkipCommit {
+		fmt.Println()
+		ui.Info("[dry-run] Would create initial commit")
+	}
+
+	fmt.Println()
+	ui.Info("[dry-run] No changes made. Remove --dry-run to execute.")
+
+	return nil
+}
+
+func (ic *InitCommand) runInteractive() error {
+	reader := bufio.NewReader(os.Stdin)
+
+	ui.Info("Maajise Interactive Setup")
+	fmt.Println()
+
+	// Project name
+	fmt.Print("Project name: ")
+	projectName, _ := reader.ReadString('\n')
+	projectName = strings.TrimSpace(projectName)
+	if projectName == "" {
+		return fmt.Errorf("project name required")
+	}
+	if err := ic.validateProjectName(projectName); err != nil {
+		return err
+	}
+	ic.config.ProjectName = projectName
+
+	// Template selection
+	fmt.Println()
+	fmt.Println("Available templates:")
+	allTemplates := templates.All()
+	for i, tmpl := range allTemplates {
+		fmt.Printf("  %d. %s - %s\n", i+1, tmpl.Name(), tmpl.Description())
+	}
+	fmt.Printf("Select template [1-%d] (default: base): ", len(allTemplates))
+	templateChoice, _ := reader.ReadString('\n')
+	templateChoice = strings.TrimSpace(templateChoice)
+	if templateChoice == "" {
+		ic.template = "base"
+	} else {
+		// Parse number or name
+		var found bool
+		for i, tmpl := range allTemplates {
+			if templateChoice == fmt.Sprintf("%d", i+1) || templateChoice == tmpl.Name() {
+				ic.template = tmpl.Name()
+				found = true
+				break
+			}
+		}
+		if !found {
+			ic.template = "base"
+			ui.Warn(fmt.Sprintf("Unknown template %q, using base", templateChoice))
+		}
+	}
+
+	// Git configuration
+	fmt.Println()
+	fmt.Print("Initialize Git? (Y/n): ")
+	gitChoice, _ := reader.ReadString('\n')
+	gitChoice = strings.TrimSpace(strings.ToLower(gitChoice))
+	ic.config.SkipGit = (gitChoice == "n" || gitChoice == "no")
+
+	if !ic.config.SkipGit {
+		// Git name
+		defaultName := ""
+		if ic.fileConfig != nil && ic.fileConfig.Defaults.GitName != "" {
+			defaultName = ic.fileConfig.Defaults.GitName
+		}
+		if defaultName != "" {
+			fmt.Printf("Git user.name [%s]: ", defaultName)
+		} else {
+			fmt.Print("Git user.name: ")
+		}
+		gitName, _ := reader.ReadString('\n')
+		gitName = strings.TrimSpace(gitName)
+		if gitName == "" {
+			gitName = defaultName
+		}
+		ic.config.GitName = gitName
+
+		// Git email
+		defaultEmail := ""
+		if ic.fileConfig != nil && ic.fileConfig.Defaults.GitEmail != "" {
+			defaultEmail = ic.fileConfig.Defaults.GitEmail
+		}
+		if defaultEmail != "" {
+			fmt.Printf("Git user.email [%s]: ", defaultEmail)
+		} else {
+			fmt.Print("Git user.email: ")
+		}
+		gitEmail, _ := reader.ReadString('\n')
+		gitEmail = strings.TrimSpace(gitEmail)
+		if gitEmail == "" {
+			gitEmail = defaultEmail
+		}
+		ic.config.GitEmail = gitEmail
+	}
+
+	// Beads
+	fmt.Println()
+	fmt.Print("Initialize Beads issue tracking? (Y/n): ")
+	beadsChoice, _ := reader.ReadString('\n')
+	beadsChoice = strings.TrimSpace(strings.ToLower(beadsChoice))
+	ic.config.SkipBeads = (beadsChoice == "n" || beadsChoice == "no")
+
+	// Summary
+	fmt.Println()
+	ui.Info("Summary:")
+	fmt.Printf("  Project: %s\n", ic.config.ProjectName)
+	fmt.Printf("  Template: %s\n", ic.template)
+	fmt.Printf("  Git: %v\n", !ic.config.SkipGit)
+	fmt.Printf("  Beads: %v\n", !ic.config.SkipBeads)
+	fmt.Println()
+
+	fmt.Print("Proceed? (Y/n): ")
+	proceed, _ := reader.ReadString('\n')
+	proceed = strings.TrimSpace(strings.ToLower(proceed))
+	if proceed == "n" || proceed == "no" {
+		ui.Info("Cancelled")
+		return nil
+	}
+
+	// Execute
+	fmt.Println()
+	return ic.runInit()
 }
 
 func (ic *InitCommand) runInit() error {
@@ -167,7 +396,7 @@ func (ic *InitCommand) createStructure() (string, error) {
 	ui.Info("Creating directory structure...")
 	innerPath := filepath.Join(ic.config.ProjectName, ic.config.ProjectName)
 
-	if ic.fileExists(ic.config.ProjectName) {
+	if fsutil.PathExists(ic.config.ProjectName) {
 		return "", fmt.Errorf("directory '%s' already exists", ic.config.ProjectName)
 	}
 
@@ -177,11 +406,6 @@ func (ic *InitCommand) createStructure() (string, error) {
 
 	ui.Success(fmt.Sprintf("Created %s/", innerPath))
 	return innerPath, nil
-}
-
-func (ic *InitCommand) fileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
 }
 
 func (ic *InitCommand) initGit(repoDir string) error {
@@ -306,7 +530,7 @@ func (ic *InitCommand) createFiles(repoDir string) error {
 }
 
 func (ic *InitCommand) writeFileIfNotExists(path, content string) error {
-	if ic.fileExists(path) {
+	if fsutil.FileExists(path) {
 		if ic.config.NoOverwrite {
 			ui.Warn(fmt.Sprintf("Skipped %s (exists, --no-overwrite)", filepath.Base(path)))
 			return nil

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"maajise/cmd"
+	"maajise/internal/ui"
 )
 
 const VERSION = "2.0.0"
@@ -41,7 +42,7 @@ func main() {
 		// This provides the convenience shorthand: maajise my-project
 		command, _ = cmd.Get("init")
 		if command == nil {
-			fmt.Fprintf(os.Stderr, "✗ Unknown command: %s\n", cmdName)
+			ui.Error(fmt.Sprintf("Unknown command: %s", cmdName))
 			printUsage()
 			os.Exit(1)
 		}
@@ -51,7 +52,7 @@ func main() {
 
 	// Execute the command with remaining args
 	if err := command.Execute(os.Args[2:]); err != nil {
-		fmt.Fprintf(os.Stderr, "✗ Error: %v\n", err)
+		ui.Error(fmt.Sprintf("Error: %v", err))
 		os.Exit(1)
 	}
 }
@@ -65,18 +66,39 @@ Usage:
 
 Commands:
 `, VERSION)
-	for _, c := range cmd.All() {
-		fmt.Printf("  %-12s  %s\n", c.Name(), c.Description())
+
+	// Group commands logically
+	groups := []struct {
+		name     string
+		commands []string
+	}{
+		{"Project Setup", []string{"init", "add", "update"}},
+		{"Project Info", []string{"status", "validate", "templates"}},
+		{"System", []string{"doctor"}},
+		{"Help", []string{"help", "version"}},
 	}
+
+	for _, g := range groups {
+		fmt.Printf("\n  %s:\n", g.name)
+		for _, cmdName := range g.commands {
+			if c, ok := cmd.Get(cmdName); ok {
+				fmt.Printf("    %-12s  %s\n", c.Name(), c.Description())
+			}
+		}
+	}
+
 	fmt.Println()
-	fmt.Println("Flags:")
-	fmt.Println("  -h, --help     Show this help")
+	fmt.Println("Global Flags:")
+	fmt.Println("  -h, --help     Show help")
 	fmt.Println("  -v, --version  Show version")
 	fmt.Println()
 	fmt.Println("Examples:")
-	fmt.Println("  maajise init my-project")
-	fmt.Println("  maajise my-project  (same as above)")
-	fmt.Println("  maajise init --in-place")
-	fmt.Println("  maajise init my-project --no-git")
+	fmt.Println("  maajise init my-project --template=typescript")
+	fmt.Println("  maajise init --interactive")
+	fmt.Println("  maajise add git")
+	fmt.Println("  maajise doctor")
+	fmt.Println("  maajise validate")
+	fmt.Println()
+	fmt.Println("Run 'maajise help <command>' for detailed help on a command.")
 	fmt.Println()
 }
