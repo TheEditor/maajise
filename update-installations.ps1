@@ -54,10 +54,10 @@ foreach ($location in $locations) {
         # Copy executable with error handling
         try {
             Copy-Item -Path $sourceExe -Destination $installExe -Force -ErrorAction Stop
-            Write-Host "  ✓ Updated successfully" -ForegroundColor Green
+            Write-Host "  Updated successfully" -ForegroundColor Green
             $updated = $true
         } catch {
-            Write-Host "  ✗ Failed to update: $_" -ForegroundColor Red
+            Write-Host "  Failed to update: $_" -ForegroundColor Red
         }
         Write-Host ""
     }
@@ -76,7 +76,7 @@ Write-Host "Current installations:" -ForegroundColor Cyan
 foreach ($location in $locations) {
     $installExe = Join-Path $location "maajise.exe"
     if (Test-Path $installExe) {
-        Write-Host "  ✓ $location" -ForegroundColor Green
+        Write-Host "  $location" -ForegroundColor Green
     }
 }
 
