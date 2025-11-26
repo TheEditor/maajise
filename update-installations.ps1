@@ -2,7 +2,7 @@
 # Updates all Maajise installations to the latest version
 # Run as Administrator: powershell -ExecutionPolicy Bypass -File update-installations.ps1
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
 Write-Host "`n=== Maajise Installation Update ===" -ForegroundColor Cyan
 Write-Host ""
@@ -10,9 +10,10 @@ Write-Host ""
 # Check if running as admin
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
-    Write-Host "ERROR: Please run as Administrator" -ForegroundColor Red
-    Write-Host "Right-click PowerShell and select 'Run as Administrator'" -ForegroundColor Yellow
-    exit 1
+    Write-Host "WARNING: Not running as Administrator" -ForegroundColor Yellow
+    Write-Host "You may not be able to update all installations" -ForegroundColor Yellow
+    Write-Host "Right-click PowerShell and select 'Run as Administrator' for full access" -ForegroundColor Yellow
+    Write-Host ""
 }
 
 # Get current directory
@@ -43,17 +44,21 @@ foreach ($location in $locations) {
     if (Test-Path $installExe) {
         Write-Host "Updating: $location" -ForegroundColor Yellow
 
-        # Check version
-        $currentVersion = & "$installExe" version 2>&1 | Select-String "v[0-9.]+" -o | Select-Object -First 1
-        $newVersion = & "$sourceExe" version 2>&1 | Select-String "v[0-9.]+" -o | Select-Object -First 1
+        # Get file info
+        $currentFile = Get-Item $installExe
+        $newFile = Get-Item $sourceExe
 
-        Write-Host "  Current: $currentVersion" -ForegroundColor Gray
-        Write-Host "  New:     $newVersion" -ForegroundColor Gray
+        Write-Host "  Current: $($currentFile.LastWriteTime)" -ForegroundColor Gray
+        Write-Host "  New:     $($newFile.LastWriteTime)" -ForegroundColor Gray
 
-        # Copy executable
-        Copy-Item -Path $sourceExe -Destination $installExe -Force
-        Write-Host "  ✓ Updated" -ForegroundColor Green
-        $updated = $true
+        # Copy executable with error handling
+        try {
+            Copy-Item -Path $sourceExe -Destination $installExe -Force -ErrorAction Stop
+            Write-Host "  ✓ Updated successfully" -ForegroundColor Green
+            $updated = $true
+        } catch {
+            Write-Host "  ✗ Failed to update: $_" -ForegroundColor Red
+        }
         Write-Host ""
     }
 }
