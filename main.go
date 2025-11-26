@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"maajise/cmd"
 	"maajise/internal/ui"
@@ -35,8 +36,8 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Try to get the command
-	command, ok := cmd.Get(cmdName)
+	// Try to get the command (case-insensitive lookup)
+	command, ok := cmd.Get(strings.ToLower(cmdName))
 	if !ok {
 		// If not found, assume it's a project name and default to "init"
 		// This provides the convenience shorthand: maajise my-project
