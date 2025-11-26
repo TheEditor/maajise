@@ -13,6 +13,26 @@ cd "C:\Users\davef\Documents\Projects\Claude\Vibe Coding\tooling\maajise\maajise
 
 Restart terminal, use anywhere: `maajise my-project`
 
+### Updating Existing Installations
+
+If you have multiple Maajise installations (e.g., in both `Program Files` and `AppData`), use the update script:
+
+```powershell
+.\update-installations.ps1
+```
+
+To remove duplicate installations and keep only one:
+
+```powershell
+Remove-Item -Path "C:\Users\$env:USERNAME\AppData\Local\Programs\Maajise" -Recurse -Force
+```
+
+To check which Maajise is in your PATH:
+
+```powershell
+where maajise
+```
+
 ## Usage
 
 ### Create New Project (Standard)
