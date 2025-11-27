@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"sort"
+
+	"maajise/internal/ui"
 )
 
 type HelpCommand struct {
@@ -85,7 +87,7 @@ func (hc *HelpCommand) showCommandHelp(cmdName string) error {
 		return fmt.Errorf("unknown command: %s", cmdName)
 	}
 
-	fmt.Printf("Command: %s\n", cmd.Name())
+	ui.Header(fmt.Sprintf("Command: %s", cmd.Name()))
 	fmt.Printf("Description: %s\n", cmd.Description())
 	fmt.Println()
 	fmt.Println("Usage:")

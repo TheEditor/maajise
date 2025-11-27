@@ -1,9 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(bd ready:*)"
+      "Bash(bd ready:*)",
+      "Bash(go test:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "includeCoAuthoredBy": false
 }

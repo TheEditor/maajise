@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"testing"
+
+	"maajise/internal/config"
 )
 
 func TestNewInitCommand(t *testing.T) {
@@ -84,26 +86,26 @@ func TestInitCommand_ValidateProjectName(t *testing.T) {
 }
 
 func TestDefaultConfig(t *testing.T) {
-	config := DefaultConfig()
+	cfg := config.DefaultConfig()
 
-	if config.InPlace != false {
+	if cfg.InPlace != false {
 		t.Error("Expected InPlace to default to false")
 	}
 
-	if config.SkipGit != false {
+	if cfg.SkipGit != false {
 		t.Error("Expected SkipGit to default to false")
 	}
 
-	if config.SkipBeads != false {
+	if cfg.SkipBeads != false {
 		t.Error("Expected SkipBeads to default to false")
 	}
 
-	if config.NoOverwrite != false {
+	if cfg.NoOverwrite != false {
 		t.Error("Expected NoOverwrite to default to false")
 	}
 
-	if config.MainBranch != "main" {
-		t.Errorf("Expected MainBranch 'main', got '%s'", config.MainBranch)
+	if cfg.MainBranch != "main" {
+		t.Errorf("Expected MainBranch 'main', got '%s'", cfg.MainBranch)
 	}
 }
 
