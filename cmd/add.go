@@ -76,7 +76,15 @@ func (ac *AddCommand) Examples() string {
   maajise add .gitignore --template=typescript
 
   # Preview changes without applying
-  maajise add --dry-run git`
+  maajise add --dry-run git
+
+  # Force overwrite existing files
+  maajise add .gitignore --force
+      Overwrites .gitignore even if it exists
+
+  # Verbose output
+  maajise add git --verbose
+      Shows detailed output during Git initialization`
 }
 
 func (ac *AddCommand) Run(args []string) error {
@@ -195,13 +203,13 @@ func (ac *AddCommand) addBeads(dir string) error {
 func (ac *AddCommand) addFile(dir, projectName, filename string) error {
 	tmpl, ok := templates.Get(ac.template)
 	if !ok {
-		return fmt.Errorf("unknown template: %s", ac.template)
+		return ui.UsageError("add", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go)", ac.template))
 	}
 
 	files := tmpl.Files(projectName)
 	content, ok := files[filename]
 	if !ok {
-		return fmt.Errorf("file %s not found in template %s", filename, ac.template)
+		return ui.UsageError("add", fmt.Sprintf("file %s not found in template %s", filename, ac.template))
 	}
 
 	path := filepath.Join(dir, filename)

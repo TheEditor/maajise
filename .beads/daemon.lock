@@ -1,7 +1,7 @@
 {
-  "pid": 48252,
-  "parent_pid": 54800,
+  "pid": 35400,
+  "parent_pid": 10304,
   "database": "C:\\Users\\davef\\Documents\\Projects\\Claude\\Vibe Coding\\tooling\\maajise\\maajise\\.beads\\beads.db",
   "version": "0.27.2",
-  "started_at": "2025-12-01T22:40:52.3838824Z"
+  "started_at": "2025-12-01T23:12:00.3757661Z"
 }

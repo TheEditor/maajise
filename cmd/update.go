@@ -69,7 +69,11 @@ func (uc *UpdateCommand) Examples() string {
   maajise update .gitignore .ubsignore
 
   # Preview changes without applying
-  maajise update --dry-run`
+  maajise update --dry-run
+
+  # Verbose output
+  maajise update --verbose
+      Shows detailed information about each file updated`
 }
 
 func (uc *UpdateCommand) Run(args []string) error {
@@ -100,7 +104,7 @@ func (uc *UpdateCommand) Run(args []string) error {
 
 	tmpl, ok := templates.Get(templateName)
 	if !ok {
-		return fmt.Errorf("unknown template: %s", templateName)
+		return ui.UsageError("update", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go)", templateName))
 	}
 
 	// Get files from template
@@ -120,7 +124,7 @@ func (uc *UpdateCommand) Run(args []string) error {
 	}
 
 	if len(files) == 0 {
-		return fmt.Errorf("no files to update")
+		return ui.UsageError("update", "no files to update")
 	}
 
 	// Update files

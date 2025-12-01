@@ -111,7 +111,44 @@ func (ic *InitCommand) Examples() string {
 
   # Dry run - preview changes without making them
   maajise init my-project --dry-run
-      Shows what would be created without actually creating files`
+      Shows what would be created without actually creating files
+
+  # Skip Git initialization
+  maajise init my-project --skip-git
+      Creates project without Git repository
+
+  # Skip Beads issue tracking
+  maajise init my-project --skip-beads
+      Creates project without Beads initialization
+
+  # Non-interactive Git configuration
+  maajise init my-project --git-name="John Doe" --git-email="john@example.com"
+      Sets Git user without prompts
+
+  # Skip Git user configuration
+  maajise init my-project --skip-git-user
+      Skips Git user.name and user.email prompts
+
+  # Skip initial commit
+  maajise init my-project --skip-commit
+      Initializes Git but doesn't create initial commit
+
+  # Skip remote setup
+  maajise init my-project --skip-remote
+      Skips the optional remote repository configuration
+
+  # Verbose output
+  maajise init my-project --verbose
+      Shows detailed output during initialization
+
+  # Available templates
+  Available templates: base, typescript, python, rust, php, go
+      base:       Basic project structure (.gitignore, README, .ubsignore)
+      typescript: TypeScript project (tsconfig.json, package.json)
+      python:     Python project (pyproject.toml, requirements.txt)
+      rust:       Rust project (Cargo.toml)
+      php:        PHP project (composer.json)
+      go:         Go project (go.mod)`
 }
 
 func (ic *InitCommand) Run(args []string) error {
@@ -133,7 +170,7 @@ func (ic *InitCommand) Run(args []string) error {
 		if response == "" || response == "y" || response == "yes" {
 			ic.interactive = true
 		} else {
-			return fmt.Errorf("project name required (or use --interactive)")
+			return ui.UsageError("init", "project name required (or use --interactive)")
 		}
 	}
 
@@ -145,7 +182,7 @@ func (ic *InitCommand) Run(args []string) error {
 	// Get project name from remaining args
 	if !ic.config.InPlace {
 		if len(remainingArgs) == 0 {
-			return fmt.Errorf("project name required")
+			return ui.UsageError("init", "project name required")
 		}
 		ic.config.ProjectName = remainingArgs[0]
 	} else {
@@ -176,12 +213,12 @@ func (ic *InitCommand) Run(args []string) error {
 
 func (ic *InitCommand) validateProjectName(name string) error {
 	if name == "" {
-		return fmt.Errorf("empty name")
+		return ui.UsageError("init", "project name cannot be empty")
 	}
 
 	match, _ := regexp.MatchString("^[a-zA-Z0-9_-]+$", name)
 	if !match {
-		return fmt.Errorf("invalid characters in project name")
+		return ui.UsageError("init", "invalid characters in project name (use only letters, numbers, hyphens, and underscores)")
 	}
 
 	return nil
@@ -222,7 +259,7 @@ func (ic *InitCommand) runDryRun() error {
 	// Show files from template
 	tmpl, ok := templates.Get(ic.template)
 	if !ok {
-		return fmt.Errorf("unknown template: %s", ic.template)
+		return ui.UsageError("init", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go)", ic.template))
 	}
 
 	files := tmpl.Files(ic.config.ProjectName)
@@ -265,7 +302,7 @@ func (ic *InitCommand) runInteractive() error {
 	projectName, _ := reader.ReadString('\n')
 	projectName = strings.TrimSpace(projectName)
 	if projectName == "" {
-		return fmt.Errorf("project name required")
+		return ui.UsageError("init", "project name required")
 	}
 	if err := ic.validateProjectName(projectName); err != nil {
 		return err
@@ -472,7 +509,7 @@ func (ic *InitCommand) configureGitUser(repoDir string) error {
 
 		// Validate email format
 		if !strings.Contains(userEmail, "@") || !strings.Contains(userEmail, ".") {
-			return fmt.Errorf("invalid email format")
+			return ui.UsageError("init", "invalid email format")
 		}
 
 		if ic.config.Verbose {
@@ -495,7 +532,7 @@ func (ic *InitCommand) configureGitUser(repoDir string) error {
 		userName = strings.TrimSpace(userName)
 
 		if userName == "" {
-			return fmt.Errorf("git user.name cannot be empty")
+			return ui.UsageError("init", "git user.name cannot be empty")
 		}
 
 		// Get user.email
@@ -507,12 +544,12 @@ func (ic *InitCommand) configureGitUser(repoDir string) error {
 		userEmail = strings.TrimSpace(userEmail)
 
 		if userEmail == "" {
-			return fmt.Errorf("git user.email cannot be empty")
+			return ui.UsageError("init", "git user.email cannot be empty")
 		}
 
 		// Validate email format (basic check)
 		if !strings.Contains(userEmail, "@") || !strings.Contains(userEmail, ".") {
-			return fmt.Errorf("invalid email format")
+			return ui.UsageError("init", "invalid email format")
 		}
 	}
 
@@ -548,7 +585,7 @@ func (ic *InitCommand) initBeads(repoDir string) {
 func (ic *InitCommand) createFiles(repoDir string) error {
 	tmpl, ok := templates.Get(ic.template)
 	if !ok {
-		return fmt.Errorf("unknown template: %s (use 'maajise templates' to list available)", ic.template)
+		return ui.UsageError("init", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go)", ic.template))
 	}
 
 	files := tmpl.Files(ic.config.ProjectName)

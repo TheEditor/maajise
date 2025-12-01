@@ -1,10 +1,16 @@
 package cmd
 
 import (
+	"strings"
 	"testing"
 
 	"maajise/internal/config"
 )
+
+// contains is a helper function for substring checking in tests
+func contains(s, substr string) bool {
+	return strings.Contains(s, substr)
+}
 
 func TestNewInitCommand(t *testing.T) {
 	ic := NewInitCommand()
@@ -35,8 +41,13 @@ func TestInitCommand_Execute_NoProjectName(t *testing.T) {
 		t.Error("Expected error when no project name provided")
 	}
 
-	if err.Error() != "project name required" {
-		t.Errorf("Expected 'project name required' error, got: %v", err)
+	// Check that error contains the key message and help hint
+	errMsg := err.Error()
+	if !contains(errMsg, "project name required") {
+		t.Errorf("Expected 'project name required' in error, got: %v", err)
+	}
+	if !contains(errMsg, "maajise init --help") {
+		t.Errorf("Expected help hint in error, got: %v", err)
 	}
 }
 
