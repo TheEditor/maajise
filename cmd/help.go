@@ -26,18 +26,26 @@ func (hc *HelpCommand) Description() string {
 	return "Display help information about commands"
 }
 
+func (hc *HelpCommand) LongDescription() string {
+	return `Show help information for Maajise commands.
+
+Without arguments, displays a list of all available commands with brief descriptions.
+With a command name, shows detailed help including usage syntax, description, and examples.`
+}
+
 func (hc *HelpCommand) Usage() string {
 	return "maajise help [command]"
 }
 
-func (hc *HelpCommand) Examples() []string {
-	return []string{
-		"maajise help",
-		"maajise help init",
-	}
+func (hc *HelpCommand) Examples() string {
+	return `  # Show all commands
+  maajise help
+
+  # Show help for specific command
+  maajise help init`
 }
 
-func (hc *HelpCommand) Execute(args []string) error {
+func (hc *HelpCommand) Run(args []string) error {
 	if err := hc.fs.Parse(args); err != nil {
 		return err
 	}
@@ -88,7 +96,7 @@ func (hc *HelpCommand) showCommandHelp(cmdName string) error {
 	}
 
 	ui.Header(fmt.Sprintf("Command: %s", cmd.Name()))
-	fmt.Printf("Description: %s\n", cmd.Description())
+	fmt.Println(cmd.LongDescription())
 	fmt.Println()
 	fmt.Println("Usage:")
 	fmt.Printf("  %s\n", cmd.Usage())
@@ -96,11 +104,9 @@ func (hc *HelpCommand) showCommandHelp(cmdName string) error {
 
 	// Show examples
 	examples := cmd.Examples()
-	if len(examples) > 0 {
+	if examples != "" {
 		fmt.Println("Examples:")
-		for _, example := range examples {
-			fmt.Printf("  %s\n", example)
-		}
+		fmt.Println(examples)
 	}
 
 	return nil

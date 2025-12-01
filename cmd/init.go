@@ -68,21 +68,53 @@ func (ic *InitCommand) Description() string {
 	return "Initialize a new project with Git, Beads, and configuration files"
 }
 
+func (ic *InitCommand) LongDescription() string {
+	return `Initialize a new project with Git version control, Beads issue tracker, and configuration files.
+
+Creates a project directory (or initializes the current directory with --in-place), sets up
+Git for version control, initializes Beads for issue tracking, and creates standard configuration
+files based on the selected template.
+
+Available templates: base, typescript, python, rust, php, go. Use 'maajise templates' to see
+detailed descriptions of each template.`
+}
+
 func (ic *InitCommand) Usage() string {
 	return "maajise init [flags] [project-name]"
 }
 
-func (ic *InitCommand) Examples() []string {
-	return []string{
-		"maajise init my-project",
-		"maajise init my-project --template=typescript",
-		"maajise init my-project --dry-run",
-		"maajise init --interactive",
-		"maajise init --in-place --template=rust",
-	}
+func (ic *InitCommand) Examples() string {
+	return `  # Basic initialization
+  maajise init my-project
+
+  Output:
+    Creating project: my-project
+    ✓ Created directory structure
+    ✓ Initialized Git repository
+    ✓ Initialized Beads issue tracker
+
+  # Initialize in current directory
+  maajise init --in-place
+      Initializes the current directory instead of creating a new one
+
+  # Use TypeScript template
+  maajise init my-ts-app --template=typescript
+      Creates a TypeScript project with tsconfig.json, package.json
+
+  # Safe mode - don't overwrite existing files
+  maajise init my-project --no-overwrite
+      Skips any files that already exist
+
+  # Interactive mode
+  maajise init --interactive
+      Prompts for project name and configuration options
+
+  # Dry run - preview changes without making them
+  maajise init my-project --dry-run
+      Shows what would be created without actually creating files`
 }
 
-func (ic *InitCommand) Execute(args []string) error {
+func (ic *InitCommand) Run(args []string) error {
 	// Parse flags
 	if err := ic.fs.Parse(args); err != nil {
 		return err

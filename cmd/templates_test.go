@@ -21,7 +21,7 @@ func TestTemplatesCommand(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := tc.Execute([]string{})
+	err := tc.Run([]string{})
 
 	w.Close()
 	os.Stdout = old

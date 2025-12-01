@@ -1,11 +1,14 @@
 {
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(bd ready:*)",
-      "Bash(go test:*)"
+      "Bash(go test:*)",
+      "Bash(cd:*)",
+      "Bash(npx tsx:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
-  },
-  "includeCoAuthoredBy": false
+  }
 }

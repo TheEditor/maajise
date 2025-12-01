@@ -50,23 +50,36 @@ func (ac *AddCommand) Description() string {
 	return "Add files or tooling to an existing project"
 }
 
+func (ac *AddCommand) LongDescription() string {
+	return `Add files or tooling components to an existing project.
+
+Add Git repositories, Beads issue tracking, .gitignore files, .ubsignore files, or
+README.md files to an existing project. If the template is not specified, it will be
+auto-detected based on the project structure.`
+}
+
 func (ac *AddCommand) Usage() string {
 	return "maajise add <item> [flags]"
 }
 
-func (ac *AddCommand) Examples() []string {
-	return []string{
-		"maajise add git",
-		"maajise add beads",
-		"maajise add ubs",
-		"maajise add .gitignore",
-		"maajise add .gitignore --template=typescript",
-		"maajise add readme",
-		"maajise add --dry-run git",
-	}
+func (ac *AddCommand) Examples() string {
+	return `  # Add Git initialization
+  maajise add git
+
+  # Add Beads issue tracking
+  maajise add beads
+
+  # Add .ubsignore file
+  maajise add ubs
+
+  # Add .gitignore with specific template
+  maajise add .gitignore --template=typescript
+
+  # Preview changes without applying
+  maajise add --dry-run git`
 }
 
-func (ac *AddCommand) Execute(args []string) error {
+func (ac *AddCommand) Run(args []string) error {
 	if err := ac.fs.Parse(args); err != nil {
 		return err
 	}

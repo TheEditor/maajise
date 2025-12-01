@@ -22,7 +22,7 @@ func TestNewInitCommand(t *testing.T) {
 	}
 
 	examples := ic.Examples()
-	if len(examples) == 0 {
+	if examples == "" {
 		t.Error("Examples should not be empty")
 	}
 }
@@ -30,7 +30,7 @@ func TestNewInitCommand(t *testing.T) {
 func TestInitCommand_Execute_NoProjectName(t *testing.T) {
 	ic := NewInitCommand()
 
-	err := ic.Execute([]string{})
+	err := ic.Run([]string{})
 	if err == nil {
 		t.Error("Expected error when no project name provided")
 	}
@@ -44,7 +44,7 @@ func TestInitCommand_Execute_InvalidProjectName(t *testing.T) {
 	ic := NewInitCommand()
 
 	// Invalid characters should fail
-	err := ic.Execute([]string{"my project!"})
+	err := ic.Run([]string{"my project!"})
 	if err == nil {
 		t.Error("Expected error for invalid project name")
 	}

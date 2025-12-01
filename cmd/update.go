@@ -43,21 +43,36 @@ func (uc *UpdateCommand) Description() string {
 	return "Update configuration files in an existing project"
 }
 
+func (uc *UpdateCommand) LongDescription() string {
+	return `Update configuration files in an existing project.
+
+Updates files like .gitignore, .ubsignore, and README.md based on the project's template.
+If no specific files are provided, all standard configuration files are updated. Use --dry-run
+to preview changes before applying them.`
+}
+
 func (uc *UpdateCommand) Usage() string {
 	return "maajise update [flags] [files...]"
 }
 
-func (uc *UpdateCommand) Examples() []string {
-	return []string{
-		"maajise update",
-		"maajise update --force",
-		"maajise update --template=typescript",
-		"maajise update .gitignore .ubsignore",
-		"maajise update --dry-run",
-	}
+func (uc *UpdateCommand) Examples() string {
+	return `  # Update all configuration files
+  maajise update
+
+  # Force overwrite existing files
+  maajise update --force
+
+  # Update with specific template
+  maajise update --template=typescript
+
+  # Update specific files only
+  maajise update .gitignore .ubsignore
+
+  # Preview changes without applying
+  maajise update --dry-run`
 }
 
-func (uc *UpdateCommand) Execute(args []string) error {
+func (uc *UpdateCommand) Run(args []string) error {
 	if err := uc.fs.Parse(args); err != nil {
 		return err
 	}

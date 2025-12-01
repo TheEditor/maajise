@@ -144,14 +144,14 @@ func TestValidateCommand_StrictMode(t *testing.T) {
 	defer os.Chdir(oldDir)
 
 	// Normal mode should pass (warnings OK)
-	err = vc.Execute([]string{})
+	err = vc.Run([]string{})
 	if err != nil {
 		t.Errorf("Execute() normal mode error = %v, want nil", err)
 	}
 
 	// Strict mode should fail (warnings = errors)
 	vc = NewValidateCommand() // Reset command
-	err = vc.Execute([]string{"--strict"})
+	err = vc.Run([]string{"--strict"})
 	if err == nil {
 		t.Error("Execute(--strict) should fail with warnings")
 	}
@@ -178,7 +178,7 @@ func TestValidateCommand_VerboseMode(t *testing.T) {
 
 	// Execute with verbose flag
 	vc = NewValidateCommand()
-	err = vc.Execute([]string{"--verbose"})
+	err = vc.Run([]string{"--verbose"})
 	if err != nil {
 		t.Errorf("Execute(--verbose) error = %v, want nil", err)
 	}

@@ -32,7 +32,7 @@ func TestAddCommand_Usage(t *testing.T) {
 func TestAddCommand_Examples(t *testing.T) {
 	ac := NewAddCommand()
 	examples := ac.Examples()
-	if len(examples) == 0 {
+	if examples == "" {
 		t.Error("Examples() returned empty slice")
 	}
 }

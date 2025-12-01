@@ -25,21 +25,27 @@ func (vc *VersionCommand) Description() string {
 	return "Display version information"
 }
 
+func (vc *VersionCommand) LongDescription() string {
+	return `Display version information for Maajise.
+
+Shows the current version number and build information. Use this to verify
+which version of Maajise is installed on your system.`
+}
+
 func (vc *VersionCommand) Usage() string {
 	return "maajise version"
 }
 
-func (vc *VersionCommand) Examples() []string {
-	return []string{
-		"maajise version",
-	}
+func (vc *VersionCommand) Examples() string {
+	return `  # Show version
+  maajise version`
 }
 
 func (vc *VersionCommand) FlagSet() *flag.FlagSet {
 	return vc.fs
 }
 
-func (vc *VersionCommand) Execute(args []string) error {
+func (vc *VersionCommand) Run(args []string) error {
 	if err := vc.fs.Parse(args); err != nil {
 		return err
 	}

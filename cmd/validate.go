@@ -44,19 +44,29 @@ func (vc *ValidateCommand) Description() string {
 	return "Validate project setup and configuration"
 }
 
+func (vc *ValidateCommand) LongDescription() string {
+	return `Validate the current project's setup and configuration.
+
+Checks for Git initialization, Beads setup, required configuration files, and
+template-specific requirements. Reports any issues and warnings found.`
+}
+
 func (vc *ValidateCommand) Usage() string {
 	return "maajise validate [flags]"
 }
 
-func (vc *ValidateCommand) Examples() []string {
-	return []string{
-		"maajise validate",
-		"maajise validate --strict",
-		"maajise validate --verbose",
-	}
+func (vc *ValidateCommand) Examples() string {
+	return `  # Validate current project
+  maajise validate
+
+  # Strict mode - treat warnings as failures
+  maajise validate --strict
+
+  # Verbose output with detailed information
+  maajise validate --verbose`
 }
 
-func (vc *ValidateCommand) Execute(args []string) error {
+func (vc *ValidateCommand) Run(args []string) error {
 	if err := vc.fs.Parse(args); err != nil {
 		return err
 	}

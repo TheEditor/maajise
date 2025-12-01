@@ -51,7 +51,7 @@ func TestStatusCommand_Execute(t *testing.T) {
 	defer os.Chdir(oldDir)
 
 	// Should not error even in empty directory
-	err = sc.Execute([]string{})
+	err = sc.Run([]string{})
 	if err != nil {
 		t.Errorf("Execute() error = %v", err)
 	}
@@ -73,7 +73,7 @@ func TestStatusCommand_WithGitInitialized(t *testing.T) {
 	os.Chdir(tmpDir)
 	defer os.Chdir(oldDir)
 
-	err = sc.Execute([]string{})
+	err = sc.Run([]string{})
 	if err != nil {
 		t.Errorf("Execute() with .git error = %v", err)
 	}
@@ -95,7 +95,7 @@ func TestStatusCommand_WithBeadsInitialized(t *testing.T) {
 	os.Chdir(tmpDir)
 	defer os.Chdir(oldDir)
 
-	err = sc.Execute([]string{})
+	err = sc.Run([]string{})
 	if err != nil {
 		t.Errorf("Execute() with .beads error = %v", err)
 	}
@@ -117,7 +117,7 @@ func TestStatusCommand_WithTemplateMarkers(t *testing.T) {
 	os.Chdir(tmpDir)
 	defer os.Chdir(oldDir)
 
-	err = sc.Execute([]string{})
+	err = sc.Run([]string{})
 	if err != nil {
 		t.Errorf("Execute() with template marker error = %v", err)
 	}
@@ -141,7 +141,7 @@ func TestStatusCommand_FilePresenceChecks(t *testing.T) {
 	os.Chdir(tmpDir)
 	defer os.Chdir(oldDir)
 
-	err = sc.Execute([]string{})
+	err = sc.Run([]string{})
 	if err != nil {
 		t.Errorf("Execute() with files error = %v", err)
 	}

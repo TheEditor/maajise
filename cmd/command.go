@@ -6,9 +6,10 @@ import "flag"
 type Command interface {
 	Name() string
 	Description() string
+	LongDescription() string
 	Usage() string
-	Examples() []string
-	Execute(args []string) error
+	Examples() string
+	Run(args []string) error
 }
 
 // Registry holds all registered commands

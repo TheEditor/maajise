@@ -29,7 +29,7 @@ func main() {
 	// Handle version flags
 	if cmdName == "-v" || cmdName == "--version" || cmdName == "version" {
 		if vc, ok := cmd.Get("version"); ok {
-			vc.Execute([]string{})
+			vc.Run([]string{})
 		} else {
 			fmt.Printf("Maajise v%s\n", VERSION)
 		}
@@ -51,8 +51,19 @@ func main() {
 		os.Args = append([]string{os.Args[0], "init"}, os.Args[1:]...)
 	}
 
+	// Check for --help or -h flag in remaining args
+	for _, arg := range os.Args[2:] {
+		if arg == "--help" || arg == "-h" {
+			if helpCmd, ok := cmd.Get("help"); ok {
+				helpCmd.Run([]string{cmdName})
+				os.Exit(0)
+			}
+			break
+		}
+	}
+
 	// Execute the command with remaining args
-	if err := command.Execute(os.Args[2:]); err != nil {
+	if err := command.Run(os.Args[2:]); err != nil {
 		ui.Error(fmt.Sprintf("Error: %v", err))
 		os.Exit(1)
 	}

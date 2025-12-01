@@ -81,7 +81,7 @@ func TestUpdateCommand_DryRun(t *testing.T) {
 	defer os.Chdir(oldDir)
 
 	// Execute dry run
-	err = uc.Execute([]string{"--dry-run"})
+	err = uc.Run([]string{"--dry-run"})
 	if err != nil {
 		t.Errorf("Execute(--dry-run) error = %v", err)
 	}
@@ -112,7 +112,7 @@ func TestUpdateCommand_Force(t *testing.T) {
 	os.WriteFile(".gitignore", initialContent, 0644)
 
 	// Execute update without force (should skip)
-	err = uc.Execute([]string{})
+	err = uc.Run([]string{})
 	if err != nil {
 		t.Errorf("Execute() error = %v", err)
 	}
@@ -124,7 +124,7 @@ func TestUpdateCommand_Force(t *testing.T) {
 	}
 
 	// Execute update with force (should overwrite)
-	err = uc.Execute([]string{"--force"})
+	err = uc.Run([]string{"--force"})
 	if err != nil {
 		t.Errorf("Execute(--force) error = %v", err)
 	}
@@ -151,7 +151,7 @@ func TestUpdateCommand_SpecificFiles(t *testing.T) {
 	defer os.Chdir(oldDir)
 
 	// Execute update with specific files
-	err = uc.Execute([]string{".gitignore"})
+	err = uc.Run([]string{".gitignore"})
 	if err != nil {
 		t.Errorf("Execute with specific files error = %v", err)
 	}

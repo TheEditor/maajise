@@ -42,18 +42,27 @@ func (dc *DoctorCommand) Description() string {
 	return "Check system dependencies and configuration"
 }
 
+func (dc *DoctorCommand) LongDescription() string {
+	return `Check system dependencies and configuration for Maajise.
+
+Verifies that required tools (Git, Beads) are installed and accessible, and optionally
+checks for optional tools (UBS, Go). Helps diagnose setup issues and verify the system
+is properly configured for using Maajise.`
+}
+
 func (dc *DoctorCommand) Usage() string {
 	return "maajise doctor [flags]"
 }
 
-func (dc *DoctorCommand) Examples() []string {
-	return []string{
-		"maajise doctor",
-		"maajise doctor --verbose",
-	}
+func (dc *DoctorCommand) Examples() string {
+	return `  # Check dependencies
+  maajise doctor
+
+  # Verbose output with version details
+  maajise doctor --verbose`
 }
 
-func (dc *DoctorCommand) Execute(args []string) error {
+func (dc *DoctorCommand) Run(args []string) error {
 	if err := dc.fs.Parse(args); err != nil {
 		return err
 	}

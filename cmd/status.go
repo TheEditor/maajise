@@ -29,17 +29,31 @@ func (sc *StatusCommand) Description() string {
 	return "Show quick project status"
 }
 
+func (sc *StatusCommand) LongDescription() string {
+	return `Display quick status information about the current project.
+
+Shows the project name, path, Git initialization status, Beads initialization status,
+detected template type, and presence of key configuration files.`
+}
+
 func (sc *StatusCommand) Usage() string {
 	return "maajise status"
 }
 
-func (sc *StatusCommand) Examples() []string {
-	return []string{
-		"maajise status",
-	}
+func (sc *StatusCommand) Examples() string {
+	return `  # Show project status
+  maajise status
+
+  Output:
+    Project: my-project
+    Path:    /home/user/my-project
+
+    ✓ Git:     initialized
+    ✓ Beads:   initialized
+    Template:  typescript`
 }
 
-func (sc *StatusCommand) Execute(args []string) error {
+func (sc *StatusCommand) Run(args []string) error {
 	if err := sc.fs.Parse(args); err != nil {
 		return err
 	}

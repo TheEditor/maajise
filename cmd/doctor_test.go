@@ -28,7 +28,7 @@ func TestDoctorCommand_Usage(t *testing.T) {
 func TestDoctorCommand_Examples(t *testing.T) {
 	dc := NewDoctorCommand()
 	examples := dc.Examples()
-	if len(examples) == 0 {
+	if examples == "" {
 		t.Error("Examples() returned empty slice")
 	}
 }
@@ -80,7 +80,7 @@ func TestDoctorCommand_RunCheck_Missing(t *testing.T) {
 func TestDoctorCommand_Execute(t *testing.T) {
 	dc := NewDoctorCommand()
 	// Execute without args should work
-	err := dc.Execute([]string{})
+	err := dc.Run([]string{})
 	if err == nil {
 		// Expected: may error if required dependencies missing, but that's ok for test
 		return

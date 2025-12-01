@@ -20,7 +20,7 @@ func TestNewVersionCommand(t *testing.T) {
 	}
 
 	examples := vc.Examples()
-	if len(examples) == 0 {
+	if examples == "" {
 		t.Error("Examples should not be empty")
 	}
 }
@@ -30,12 +30,20 @@ func TestVersionCommand_InterfaceImplementation(t *testing.T) {
 	var _ Command = (*VersionCommand)(nil)
 }
 
-func TestVersionCommand_Execute(t *testing.T) {
+func TestVersionCommand_Run(t *testing.T) {
 	vc := NewVersionCommand()
 
-	err := vc.Execute([]string{})
+	err := vc.Run([]string{})
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
+	}
+}
+
+func TestVersionCommand_LongDescription(t *testing.T) {
+	vc := NewVersionCommand()
+
+	if vc.LongDescription() == "" {
+		t.Error("LongDescription should not be empty")
 	}
 }
 

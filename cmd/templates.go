@@ -27,17 +27,27 @@ func (tc *TemplatesCommand) Description() string {
 	return "List available project templates"
 }
 
+func (tc *TemplatesCommand) LongDescription() string {
+	return `List all available project templates.
+
+Shows all built-in templates with their descriptions and any required dependencies.
+Use a template with 'maajise init <project> --template=<name>' to create projects
+with specific configurations.`
+}
+
 func (tc *TemplatesCommand) Usage() string {
 	return "maajise templates"
 }
 
-func (tc *TemplatesCommand) Examples() []string {
-	return []string{
-		"maajise templates",
-	}
+func (tc *TemplatesCommand) Examples() string {
+	return `  # List all templates
+  maajise templates
+
+  # Use a template when creating a project
+  maajise init my-app --template=typescript`
 }
 
-func (tc *TemplatesCommand) Execute(args []string) error {
+func (tc *TemplatesCommand) Run(args []string) error {
 	if err := tc.fs.Parse(args); err != nil {
 		return err
 	}
