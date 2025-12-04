@@ -14,7 +14,7 @@ func (t *GoTemplate) Name() string {
 }
 
 func (t *GoTemplate) Description() string {
-	return "Go project with module configuration"
+	return "Go project with Standard Go Project Layout (cmd/, internal/, pkg/)"
 }
 
 func (t *GoTemplate) Dependencies() []string {
@@ -23,11 +23,19 @@ func (t *GoTemplate) Dependencies() []string {
 
 func (t *GoTemplate) Files(projectName string) map[string]string {
 	return map[string]string{
-		".gitignore": t.gitignore(),
-		".ubsignore": t.ubsignore(),
-		"README.md":  t.readme(projectName),
-		"go.mod":     t.goMod(projectName),
-		"main.go":    t.mainGo(),
+		".gitignore":                      t.gitignore(),
+		".ubsignore":                      t.ubsignore(),
+		"README.md":                       t.readme(projectName),
+		"go.mod":                          t.goMod(projectName),
+		"api/.gitkeep":                    "",
+		"build/.gitkeep":                  "",
+		"cmd/" + projectName + "/main.go": t.mainGo(),
+		"configs/.gitkeep":                "",
+		"docs/.gitkeep":                   "",
+		"internal/.gitkeep":               "",
+		"pkg/.gitkeep":                    "",
+		"scripts/.gitkeep":                "",
+		"test/.gitkeep":                   "",
 	}
 }
 
@@ -84,30 +92,49 @@ vendor/
 func (t *GoTemplate) readme(projectName string) string {
 	return fmt.Sprintf(`# %s
 
-A Go project.
+## Project Structure
 
-## Setup
+This project follows the [Standard Go Project Layout](https://github.com/golang-standards/project-layout).
 
-` + "```bash" + `
-# Download dependencies
-go mod download
-` + "```" + `
+| Directory | Purpose |
+|-----------|---------|
+| cmd/%s/ | Main application entry point |
+| internal/ | Private application code (enforced by Go) |
+| pkg/ | Public library code (can be imported externally) |
+| api/ | API definitions (OpenAPI, Protocol Buffers, JSON Schema) |
+| configs/ | Configuration file templates |
+| scripts/ | Build, install, and management scripts |
+| test/ | Additional test apps and test data |
+| docs/ | Documentation beyond README |
+| build/ | Packaging and CI configuration |
 
 ## Development
 
+### Build
 ` + "```bash" + `
-# Run the application
-go run .
-
-# Build
-go build -o bin/%s .
-
-# Run tests
-go test ./...
-
-# Run tests with coverage
-go test -cover ./...
+go build -o bin/%s ./cmd/%s
 ` + "```" + `
+
+### Run directly
+` + "```bash" + `
+go run ./cmd/%s
+` + "```" + `
+
+### Test all packages
+` + "```bash" + `
+go test ./...
+` + "```" + `
+
+### Format code
+` + "```bash" + `
+go fmt ./...
+` + "```" + `
+
+## Getting Started
+
+1. Add your business logic to internal/
+2. Create public APIs in pkg/ if needed
+3. Import internal packages in cmd/%s/main.go
 
 ## Issue Tracking
 
@@ -122,7 +149,7 @@ bd create --title "Task"  # Create issue
 ubs .             # Scan for bugs
 go vet ./...      # Go static analysis
 ` + "```" + `
-`, projectName, projectName)
+`, projectName, projectName, projectName, projectName, projectName, projectName)
 }
 
 func (t *GoTemplate) goMod(projectName string) string {
@@ -135,10 +162,16 @@ go 1.23
 func (t *GoTemplate) mainGo() string {
 	return `package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
 	fmt.Println("Hello, Go!")
+	// TODO: Import and use packages from internal/ as your app grows
+	// Example:
+	// import "your-module/internal/config"
+	// import "your-module/internal/services"
 }
 `
 }
