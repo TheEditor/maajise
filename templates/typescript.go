@@ -14,7 +14,7 @@ func (t *TypeScriptTemplate) Name() string {
 }
 
 func (t *TypeScriptTemplate) Description() string {
-	return "TypeScript project with npm configuration"
+	return "TypeScript project with layered architecture (controllers, services, models, routes)"
 }
 
 func (t *TypeScriptTemplate) Dependencies() []string {
@@ -23,12 +23,21 @@ func (t *TypeScriptTemplate) Dependencies() []string {
 
 func (t *TypeScriptTemplate) Files(projectName string) map[string]string {
 	return map[string]string{
-		".gitignore":    t.gitignore(),
-		".ubsignore":    t.ubsignore(),
-		"README.md":     t.readme(projectName),
-		"package.json":  t.packageJSON(projectName),
-		"tsconfig.json": t.tsconfig(),
-		"src/index.ts":  t.indexTS(),
+		".gitignore":               t.gitignore(),
+		".ubsignore":               t.ubsignore(),
+		"README.md":                t.readme(projectName),
+		"package.json":             t.packageJSON(projectName),
+		"tsconfig.json":            t.tsconfig(),
+		"src/index.ts":             t.indexTS(),
+		"src/config/.gitkeep":      "",
+		"src/controllers/.gitkeep": "",
+		"src/middleware/.gitkeep":  "",
+		"src/models/.gitkeep":      "",
+		"src/routes/.gitkeep":      "",
+		"src/services/.gitkeep":    "",
+		"src/types/.gitkeep":       "",
+		"src/utils/.gitkeep":       "",
+		"tests/.gitkeep":           "",
 	}
 }
 
@@ -96,26 +105,73 @@ coverage/
 func (t *TypeScriptTemplate) readme(projectName string) string {
 	return fmt.Sprintf(`# %s
 
-A TypeScript project.
+## Project Structure
 
-## Setup
+This project uses a layered architecture for scalability and maintainability.
 
+| Directory | Purpose |
+|-----------|---------|
+| src/config/ | Application configuration and environment variables |
+| src/controllers/ | Request handlers and HTTP logic |
+| src/middleware/ | Express/HTTP middleware functions |
+| src/models/ | Data models and schemas |
+| src/routes/ | API route definitions |
+| src/services/ | Business logic layer |
+| src/types/ | TypeScript type definitions and interfaces |
+| src/utils/ | Utility functions and helpers |
+| tests/ | Unit and integration tests |
+| dist/ | Compiled JavaScript output |
+
+## Architecture
+
+Request flow: Routes → Controllers → Services → Models
+
+- **Routes**: Define endpoints, validate input
+- **Controllers**: Handle HTTP request/response
+- **Services**: Business logic, reusable across controllers
+- **Models**: Data structures, database schemas
+
+## Development
+
+### Install dependencies
 ` + "```bash" + `
 npm install
 ` + "```" + `
 
-## Development
-
+### Build
 ` + "```bash" + `
-# Run in development mode
-npm run dev
-
-# Build for production
 npm run build
-
-# Run tests
-npm test
 ` + "```" + `
+
+### Run
+` + "```bash" + `
+npm start
+` + "```" + `
+
+### Development mode (watch)
+` + "```bash" + `
+npm run dev
+` + "```" + `
+
+### Clean build artifacts
+` + "```bash" + `
+npm run clean
+` + "```" + `
+
+## Path Aliases
+
+This project uses path aliases for cleaner imports:
+
+- @config/* → src/config/*
+- @controllers/* → src/controllers/*
+- @services/* → src/services/*
+- @models/* → src/models/*
+- @middleware/* → src/middleware/*
+- @routes/* → src/routes/*
+- @types/* → src/types/*
+- @utils/* → src/utils/*
+
+Example: import { logger } from '@utils/logger';
 
 ## Issue Tracking
 
@@ -143,6 +199,7 @@ func (t *TypeScriptTemplate) packageJSON(projectName string) string {
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -169,10 +226,22 @@ func (t *TypeScriptTemplate) tsconfig() string {
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@config/*": ["config/*"],
+      "@controllers/*": ["controllers/*"],
+      "@services/*": ["services/*"],
+      "@models/*": ["models/*"],
+      "@middleware/*": ["middleware/*"],
+      "@routes/*": ["routes/*"],
+      "@types/*": ["types/*"],
+      "@utils/*": ["utils/*"]
+    }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "tests"]
 }
 `
 }
@@ -180,5 +249,17 @@ func (t *TypeScriptTemplate) tsconfig() string {
 func (t *TypeScriptTemplate) indexTS() string {
 	return `// Entry point
 console.log("Hello, TypeScript!");
+
+// TODO: Initialize your application here
+// Example structure:
+// 1. Load configuration from ./config
+// 2. Set up middleware from ./middleware
+// 3. Register routes from ./routes
+// 4. Start server or run application logic
+
+// Example imports (uncomment as you build):
+// import { config } from './config';
+// import { setupRoutes } from './routes';
+// import { logger } from './utils';
 `
 }
