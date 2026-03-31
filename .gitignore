@@ -44,3 +44,6 @@ coverage/
 *.tmp
 *.temp
 .cache/
+
+# beads_rust local runtime state
+.beads/beads.db
