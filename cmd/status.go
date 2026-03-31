@@ -32,7 +32,7 @@ func (sc *StatusCommand) Description() string {
 func (sc *StatusCommand) LongDescription() string {
 	return `Display quick status information about the current project.
 
-Shows the project name, path, Git initialization status, Beads initialization status,
+Shows the project name, path, Git initialization status, Beads (br) initialization status,
 detected template type, and presence of key configuration files.`
 }
 
@@ -49,7 +49,7 @@ func (sc *StatusCommand) Examples() string {
     Path:    /home/user/my-project
 
     ✓ Git:     initialized
-    ✓ Beads:   initialized
+    ✓ Beads:   initialized (br)
     Template:  typescript`
 }
 
@@ -77,12 +77,12 @@ func (sc *StatusCommand) Run(args []string) error {
 		ui.Warn("Git:     not initialized")
 	}
 
-	// Beads status
+	// Beads status (br)
 	beadsDir := filepath.Join(cwd, ".beads")
 	if fsutil.DirExists(beadsDir) {
-		ui.Success("Beads:   initialized")
+		ui.Success("Beads:   initialized (br)")
 	} else {
-		ui.Warn("Beads:   not initialized")
+		ui.Warn("Beads:   not initialized (br)")
 	}
 
 	// Template detection

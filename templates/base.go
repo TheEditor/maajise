@@ -18,7 +18,7 @@ func (t *BaseTemplate) Description() string {
 }
 
 func (t *BaseTemplate) Dependencies() []string {
-	return []string{"git", "bd"}
+	return []string{"git", "br"}
 }
 
 func (t *BaseTemplate) Files(projectName string) map[string]string {
@@ -175,17 +175,17 @@ cd %s
 
 ## Issue Tracking
 
-This project uses [Beads](https://github.com/jfischoff/beads) for issue tracking.
+This project uses [beads_rust](https://github.com/Dicklesworthstone/beads_rust) for issue tracking.
 
 `+"```bash"+`
 # View all issues
-bd list
+br list
 
 # Create new issue
-bd create --title "Issue title" --description "Issue description"
+br create --title "Issue title" --description "Issue description"
 
 # View issue details
-bd show <issue-id>
+br show <issue-id>
 `+"```"+`
 
 ## Code Quality

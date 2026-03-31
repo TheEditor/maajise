@@ -7,10 +7,10 @@ import (
 	"testing"
 )
 
-// Helper to check if bd is available
-func bdAvailable(t *testing.T) {
+// Helper to check if br is available
+func brAvailable(t *testing.T) {
 	if err := CheckAvailable(); err != nil {
-		t.Skip("bd not installed, skipping test")
+		t.Skip("br not installed, skipping test")
 	}
 }
 
@@ -33,16 +33,16 @@ func cleanup(t *testing.T, dir string) {
 func TestCheckAvailable(t *testing.T) {
 	err := CheckAvailable()
 	if err != nil {
-		t.Skipf("bd not available: %v", err)
+		t.Skipf("br not available: %v", err)
 	}
 }
 
 func TestInit(t *testing.T) {
-	bdAvailable(t)
+	brAvailable(t)
 	tmpDir := createTempDir(t)
 	defer cleanup(t, tmpDir)
 
-	// Initialize git first (required for bd init)
+	// Initialize git first (required for br init)
 	cmd := exec.Command("git", "init")
 	cmd.Dir = tmpDir
 	if err := cmd.Run(); err != nil {
@@ -62,7 +62,7 @@ func TestInit(t *testing.T) {
 }
 
 func TestInit_AlreadyInitialized(t *testing.T) {
-	bdAvailable(t)
+	brAvailable(t)
 	tmpDir := createTempDir(t)
 	defer cleanup(t, tmpDir)
 
@@ -86,7 +86,7 @@ func TestInit_AlreadyInitialized(t *testing.T) {
 }
 
 func TestInit_Verbose(t *testing.T) {
-	bdAvailable(t)
+	brAvailable(t)
 	tmpDir := createTempDir(t)
 	defer cleanup(t, tmpDir)
 
@@ -111,7 +111,7 @@ func TestInit_Verbose(t *testing.T) {
 }
 
 func TestIntegration_FullBeadsWorkflow(t *testing.T) {
-	bdAvailable(t)
+	brAvailable(t)
 	tmpDir := createTempDir(t)
 	defer cleanup(t, tmpDir)
 
@@ -122,7 +122,7 @@ func TestIntegration_FullBeadsWorkflow(t *testing.T) {
 		t.Fatalf("git init failed: %v", err)
 	}
 
-	// 2. Check if bd is available
+	// 2. Check if br is available
 	if err := CheckAvailable(); err != nil {
 		t.Fatalf("CheckAvailable() failed: %v", err)
 	}
@@ -139,8 +139,8 @@ func TestIntegration_FullBeadsWorkflow(t *testing.T) {
 	}
 
 	// 5. Verify we can check for initialization
-	// (skipping 'bd list' as it may have file locks on Windows)
-	if _, err := os.Stat(filepath.Join(beadsDir, "beads.jsonl")); err != nil {
+	// (skipping 'br list' as it may have file locks on Windows)
+	if _, err := os.Stat(filepath.Join(beadsDir, "issues.jsonl")); err != nil {
 		// It's ok if the file doesn't exist yet, the directory is what matters
 		if !os.IsNotExist(err) {
 			t.Errorf("failed to check beads.jsonl: %v", err)

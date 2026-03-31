@@ -18,7 +18,7 @@ func (t *TypeScriptTemplate) Description() string {
 }
 
 func (t *TypeScriptTemplate) Dependencies() []string {
-	return []string{"git", "bd", "node", "npm"}
+	return []string{"git", "br", "node", "npm"}
 }
 
 func (t *TypeScriptTemplate) Files(projectName string) map[string]string {
@@ -176,8 +176,8 @@ Example: import { logger } from '@utils/logger';
 ## Issue Tracking
 
 ` + "```bash" + `
-bd list           # View issues
-bd create --title "Task"  # Create issue
+br list           # View issues
+br create --title "Task"  # Create issue
 ` + "```" + `
 
 ## Code Quality

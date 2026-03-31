@@ -18,7 +18,7 @@ func (t *GoTemplate) Description() string {
 }
 
 func (t *GoTemplate) Dependencies() []string {
-	return []string{"git", "bd", "go"}
+	return []string{"git", "br", "go"}
 }
 
 func (t *GoTemplate) Files(projectName string) map[string]string {
@@ -139,8 +139,8 @@ go fmt ./...
 ## Issue Tracking
 
 ` + "```bash" + `
-bd list           # View issues
-bd create --title "Task"  # Create issue
+br list           # View issues
+br create --title "Task"  # Create issue
 ` + "```" + `
 
 ## Code Quality

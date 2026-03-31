@@ -18,7 +18,7 @@ func (t *PHPTemplate) Description() string {
 }
 
 func (t *PHPTemplate) Dependencies() []string {
-	return []string{"git", "bd", "php", "composer"}
+	return []string{"git", "br", "php", "composer"}
 }
 
 func (t *PHPTemplate) Files(projectName string) map[string]string {
@@ -177,12 +177,12 @@ php -l src/Controllers/HomeController.php
 
 ## Issue Tracking
 
-Track bugs and features with [bd](https://github.com/davefojtik/beads):
+Track bugs and features with [beads_rust](https://github.com/Dicklesworthstone/beads_rust):
 
 ` + "```bash" + `
-bd create --title "Bug: Fix user validation"
-bd list --status open
-bd ready  # Show issues ready to work on
+br create --title "Bug: Fix user validation"
+br list --status open
+br ready  # Show issues ready to work on
 ` + "```" + `
 
 ## Code Quality

@@ -18,7 +18,7 @@ func (t *RustTemplate) Description() string {
 }
 
 func (t *RustTemplate) Dependencies() []string {
-	return []string{"git", "bd", "cargo", "rustc"}
+	return []string{"git", "br", "cargo", "rustc"}
 }
 
 func (t *RustTemplate) Files(projectName string) map[string]string {
@@ -102,8 +102,8 @@ cargo clippy
 ## Issue Tracking
 
 ` + "```bash" + `
-bd list           # View issues
-bd create --title "Task"  # Create issue
+br list           # View issues
+br create --title "Task"  # Create issue
 ` + "```" + `
 
 ## Code Quality

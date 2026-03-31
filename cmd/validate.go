@@ -144,7 +144,7 @@ func (vc *ValidateCommand) checkBeads(dir string) ValidationResult {
 	if fsutil.DirExists(beadsDir) {
 		return ValidationResult{"Beads", "pass", "Issue tracking initialized"}
 	}
-	return ValidationResult{"Beads", "warn", "Not initialized (run 'bd init')"}
+	return ValidationResult{"Beads", "warn", "Not initialized (run 'br init')"}
 }
 
 func (vc *ValidateCommand) checkRequiredFiles(dir string) []ValidationResult {

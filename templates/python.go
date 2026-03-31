@@ -18,7 +18,7 @@ func (t *PythonTemplate) Description() string {
 }
 
 func (t *PythonTemplate) Dependencies() []string {
-	return []string{"git", "bd", "python3", "pip"}
+	return []string{"git", "br", "python3", "pip"}
 }
 
 func (t *PythonTemplate) Files(projectName string) map[string]string {
@@ -136,8 +136,8 @@ mypy src/
 ## Issue Tracking
 
 ` + "```bash" + `
-bd list           # View issues
-bd create --title "Task"  # Create issue
+br list           # View issues
+br create --title "Task"  # Create issue
 ` + "```" + `
 
 ## Code Quality

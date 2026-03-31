@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Repository Initialization Script
-# Sets up new repo with UBS, Beads, and Git
+# Sets up new repo with UBS, beads_rust, and Git
 # Usage: ./init-repo.sh <project-name>
 
 VERSION="1.0.0"
@@ -30,7 +30,7 @@ Usage: $0 <project-name>
 Creates a new repository with:
   - Nested folder structure (project/project/)
   - Git initialization
-  - Beads issue tracking
+  - beads_rust issue tracking
   - UBS scanner configuration
   - Standard files (.gitignore, README.md, etc.)
 
@@ -48,7 +48,7 @@ Example:
 
 Requirements:
   - git
-  - beads (bd command)
+  - beads_rust (br command)
   - ubs (optional, for scanning)
 
 EOF
@@ -62,8 +62,8 @@ check_dependencies() {
         missing+=("git")
     fi
     
-    if ! command -v bd >/dev/null 2>&1; then
-        missing+=("beads (bd command)")
+    if ! command -v br >/dev/null 2>&1; then
+        missing+=("beads (br command)")
     fi
     
     if [ ${#missing[@]} -gt 0 ]; then
@@ -132,20 +132,20 @@ init_git() {
     fi
 }
 
-# Initialize Beads issue tracker
+# Initialize beads_rust issue tracker
 init_beads() {
     local repo_dir="$1"
     
-    info "Initializing Beads issue tracker..."
+    info "Initializing beads_rust issue tracker..."
     
     cd "$repo_dir"
     
-    # Check if bd init works
-    if bd init >/dev/null 2>&1; then
-        success "Beads initialized"
+    # Check if br init works
+    if br init >/dev/null 2>&1; then
+        success "beads_rust initialized"
         return 0
     else
-        warn "Beads initialization failed (may need to run 'bd init' manually)"
+        warn "beads_rust initialization failed (may need to run 'br init' manually)"
         return 0  # Don't fail the whole script
     fi
 }
@@ -319,17 +319,17 @@ cd ${project_name}
 
 ## Issue Tracking
 
-This project uses [Beads](https://github.com/jfischoff/beads) for issue tracking.
+This project uses [beads_rust](https://github.com/Dicklesworthstone/beads_rust) for issue tracking.
 
 \`\`\`bash
 # View all issues
-bd list
+br list
 
 # Create new issue
-bd create --title "Issue title" --description "Issue description"
+br create --title "Issue title" --description "Issue description"
 
 # View issue details
-bd show <issue-id>
+br show <issue-id>
 \`\`\`
 
 ## Code Quality
@@ -371,7 +371,7 @@ create_initial_commit() {
 - Add .ubsignore for UBS scanner
 - Add .gitignore for version control
 - Add README.md with project structure
-- Initialize Beads issue tracking" >/dev/null 2>&1; then
+- Initialize beads_rust issue tracking" >/dev/null 2>&1; then
         success "Initial commit created"
         return 0
     else
@@ -434,11 +434,11 @@ show_summary() {
     echo "  1. cd $project_name/$project_name"
     echo "  2. Create your project files"
     echo "  3. Run 'ubs .' to scan for issues"
-    echo "  4. Run 'bd list' to manage tasks"
+    echo "  4. Run 'br list' to manage tasks"
     echo ""
     info "Quick commands:"
-    echo "  bd create --title \"Task name\"    # Create new task"
-    echo "  bd list                           # View all tasks"
+    echo "  br create --title \"Task name\"    # Create new task"
+    echo "  br list                           # View all tasks"
     echo "  ubs .                             # Scan for bugs"
     echo ""
 }
@@ -487,9 +487,9 @@ main() {
         exit 1
     fi
     
-    # Initialize Beads
+    # Initialize beads_rust
     if ! init_beads "$repo_path"; then
-        warn "Beads initialization may need manual intervention"
+        warn "beads_rust initialization may need manual intervention"
     fi
     
     # Create standard files
