@@ -203,7 +203,7 @@ func (ac *AddCommand) addBeads(dir string) error {
 func (ac *AddCommand) addFile(dir, projectName, filename string) error {
 	tmpl, ok := templates.Get(ac.template)
 	if !ok {
-		return ui.UsageError("add", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go)", ac.template))
+		return ui.UsageError("add", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go, swift)", ac.template))
 	}
 
 	files := tmpl.Files(projectName)
@@ -264,6 +264,7 @@ func (ac *AddCommand) detectTemplate(dir string) string {
 		file     string
 		template string
 	}{
+		{"Package.swift", "swift"},
 		{"package.json", "typescript"},
 		{"Cargo.toml", "rust"},
 		{"pyproject.toml", "python"},

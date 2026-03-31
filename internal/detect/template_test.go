@@ -20,6 +20,12 @@ func TestTemplate(t *testing.T) {
 			description: "No markers should default to base template",
 		},
 		{
+			name:        "Package.swift detects swift",
+			markers:     []string{"Package.swift"},
+			expected:    "swift",
+			description: "Package.swift should trigger swift detection",
+		},
+		{
 			name:        "package.json detects typescript",
 			markers:     []string{"package.json"},
 			expected:    "typescript",
@@ -115,16 +121,16 @@ func TestTemplate_WindowsPaths(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	// Create package.json
-	filePath := filepath.Join(tmpDir, "package.json")
-	if err := os.WriteFile(filePath, []byte("{}"), 0644); err != nil {
-		t.Fatalf("Failed to create package.json: %v", err)
+	// Create Package.swift
+	filePath := filepath.Join(tmpDir, "Package.swift")
+	if err := os.WriteFile(filePath, []byte("// swift package"), 0644); err != nil {
+		t.Fatalf("Failed to create Package.swift: %v", err)
 	}
 
 	// Test with both Unix and Windows path separators
 	got := Template(tmpDir)
-	if got != "typescript" {
-		t.Errorf("Template with Windows paths = %q, want %q", got, "typescript")
+	if got != "swift" {
+		t.Errorf("Template with Windows paths = %q, want %q", got, "swift")
 	}
 }
 
@@ -171,7 +177,7 @@ func TestTemplate_AllMarkersPresent(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Create all marker files
-	markers := []string{"package.json", "tsconfig.json", "Cargo.toml", "pyproject.toml",
+	markers := []string{"Package.swift", "package.json", "tsconfig.json", "Cargo.toml", "pyproject.toml",
 		"requirements.txt", "composer.json", "go.mod"}
 	for _, marker := range markers {
 		filePath := filepath.Join(tmpDir, marker)
@@ -180,9 +186,9 @@ func TestTemplate_AllMarkersPresent(t *testing.T) {
 		}
 	}
 
-	// Should return typescript (first in priority order)
+	// Should return swift (first in priority order)
 	got := Template(tmpDir)
-	if got != "typescript" {
-		t.Errorf("Template with all markers = %q, want %q (should use priority order)", got, "typescript")
+	if got != "swift" {
+		t.Errorf("Template with all markers = %q, want %q (should use priority order)", got, "swift")
 	}
 }

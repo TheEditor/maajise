@@ -14,6 +14,7 @@ func Template(dir string) string {
 		file     string
 		template string
 	}{
+		{"Package.swift", "swift"},
 		{"package.json", "typescript"},
 		{"tsconfig.json", "typescript"},
 		{"Cargo.toml", "rust"},

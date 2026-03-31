@@ -39,6 +39,10 @@ func TestTemplatesCommand(t *testing.T) {
 		t.Error("output should contain 'base' template")
 	}
 
+	if !strings.Contains(output, "swift") {
+		t.Error("output should contain 'swift' template")
+	}
+
 	if !strings.Contains(output, "Available templates") {
 		t.Error("output should contain header")
 	}

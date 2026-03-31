@@ -1,6 +1,6 @@
 # Maajise - Repository Initialization Tool
 
-Go CLI for creating repos with Git, Beads, UBS.
+Go CLI for creating repos with Git, beads_rust (br), UBS.
 
 ## Installation
 
@@ -66,7 +66,7 @@ maajise my-project --skip-remote
 # Skip Git initialization
 maajise --in-place --skip-git
 
-# Skip Beads
+# Skip beads_rust
 maajise my-project --skip-beads
 
 # Skip initial commit
@@ -84,9 +84,9 @@ maajise my-project -v
 ```
 --in-place          Initialize current directory (no nested folders)
 --no-overwrite      Skip files that already exist
---template=<name>   Project template (base, typescript, python, rust, php, go)
+--template=<name>   Project template (base, typescript, python, rust, php, go, swift)
 --skip-git          Don't initialize Git
---skip-beads        Don't initialize Beads
+--skip-beads        Don't initialize beads_rust (issue tracking)
 --skip-commit       Don't create initial commit
 --skip-remote       Don't prompt for remote setup
 -v, --verbose       Verbose output
@@ -105,6 +105,7 @@ Maajise supports multiple project templates:
 | rust       | Rust with Cargo                      |
 | php        | PHP with Composer                    |
 | go         | Go with go.mod                       |
+| swift      | Swift with SwiftPM (Package.swift)   |
 
 ### Using Templates
 
@@ -118,6 +119,7 @@ maajise my-service --template=python
 maajise my-tool --template=rust
 maajise my-project --template=php
 maajise my-cli --template=go
+maajise my-swift --template=swift
 ```
 
 ## Examples
@@ -135,6 +137,9 @@ maajise my-service --template=python
 # Rust CLI tool
 maajise my-tool --template=rust
 
+# Swift app
+maajise my-swift --template=swift
+
 # Initialize maajise itself
 cd maajise
 maajise --in-place --no-overwrite
@@ -149,7 +154,7 @@ maajise my-app --no-overwrite --skip-commit -v
 ## Requirements
 
 - `git`
-- `bd` (Beads) - optional with `--skip-beads`
+- `br` (beads_rust) - optional with `--skip-beads`
 - `ubs` - optional for scanning
 
 ## Configuration
@@ -232,7 +237,7 @@ Use with: `maajise init my-project --template=my-template`
 
 ### init
 
-Initialize a new project with Git, Beads, and configuration files.
+Initialize a new project with Git, beads_rust, and configuration files.
 
 ```bash
 maajise init <project-name> [flags]
@@ -243,7 +248,7 @@ Flags:
   --in-place          Initialize in current directory
   --no-overwrite      Don't overwrite existing files
   --skip-git          Skip Git initialization
-  --skip-beads        Skip Beads initialization
+  --skip-beads        Skip beads_rust initialization
   --skip-commit       Skip initial commit
   --skip-remote       Skip remote setup prompt
   --skip-git-user     Skip Git user configuration
@@ -259,6 +264,7 @@ Examples:
   maajise init my-project --dry-run
   maajise init --interactive
   maajise init --in-place --template=python
+  maajise init my-swift --template=swift
 ```
 
 ### add
@@ -270,7 +276,7 @@ maajise add <item> [flags]
 
 Tooling:
   git                Initialize Git repository
-  beads              Initialize Beads issue tracking
+  beads              Initialize beads_rust issue tracking
   ubs                Add .ubsignore file
 
 Files:
@@ -309,7 +315,7 @@ Examples:
 ```
 
 Reports on:
-- Required dependencies: `git`, `bd` (Beads)
+- Required dependencies: `git`, `br` (beads_rust)
 - Optional dependencies: `ubs`, `go`
 - Configuration file status
 - Custom templates directory

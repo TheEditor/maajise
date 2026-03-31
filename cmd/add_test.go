@@ -130,6 +130,24 @@ func TestAddCommand_DetectTemplate_PackageJson(t *testing.T) {
 	}
 }
 
+func TestAddCommand_DetectTemplate_PackageSwift(t *testing.T) {
+	ac := NewAddCommand()
+
+	tmpDir, err := os.MkdirTemp("", "maajise-detect-test-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create Package.swift
+	os.WriteFile(filepath.Join(tmpDir, "Package.swift"), []byte("// swift package"), 0644)
+
+	detected := ac.detectTemplate(tmpDir)
+	if detected != "swift" {
+		t.Errorf("detectTemplate() = %q, want %q", detected, "swift")
+	}
+}
+
 func TestAddCommand_DetectTemplate_CargoToml(t *testing.T) {
 	ac := NewAddCommand()
 

@@ -77,6 +77,28 @@ func TestDoctorCommand_RunCheck_Missing(t *testing.T) {
 	}
 }
 
+func TestDoctorCommand_DefaultDependencyChecks_IncludesSwiftOptional(t *testing.T) {
+	dc := NewDoctorCommand()
+	checks := dc.defaultDependencyChecks()
+
+	for _, check := range checks {
+		if check.Name == "swift" {
+			if check.Required {
+				t.Error("swift check should be optional")
+			}
+			if check.Command != "swift" {
+				t.Errorf("swift check command = %q, want %q", check.Command, "swift")
+			}
+			if len(check.Args) != 1 || check.Args[0] != "--version" {
+				t.Errorf("swift check args = %v, want [--version]", check.Args)
+			}
+			return
+		}
+	}
+
+	t.Error("default dependency checks should include swift")
+}
+
 func TestDoctorCommand_Execute(t *testing.T) {
 	dc := NewDoctorCommand()
 	// Execute without args should work

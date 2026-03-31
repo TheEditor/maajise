@@ -52,6 +52,13 @@ func TestUpdateCommand_DetectTemplate(t *testing.T) {
 		t.Errorf("detectTemplate() = %q, want %q", got, "base")
 	}
 
+	// Test Swift detection
+	os.WriteFile(filepath.Join(tmpDir, "Package.swift"), []byte("// swift package"), 0644)
+	if got := uc.detectTemplate(tmpDir); got != "swift" {
+		t.Errorf("detectTemplate() with Package.swift = %q, want %q", got, "swift")
+	}
+	os.Remove(filepath.Join(tmpDir, "Package.swift"))
+
 	// Test TypeScript detection
 	os.WriteFile(filepath.Join(tmpDir, "package.json"), []byte("{}"), 0644)
 	if got := uc.detectTemplate(tmpDir); got != "typescript" {
@@ -185,6 +192,7 @@ func (uc *UpdateCommand) detectTemplate(dir string) string {
 		file     string
 		template string
 	}{
+		{"Package.swift", "swift"},
 		{"package.json", "typescript"},
 		{"tsconfig.json", "typescript"},
 		{"Cargo.toml", "rust"},

@@ -104,7 +104,7 @@ func (uc *UpdateCommand) Run(args []string) error {
 
 	tmpl, ok := templates.Get(templateName)
 	if !ok {
-		return ui.UsageError("update", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go)", templateName))
+		return ui.UsageError("update", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go, swift)", templateName))
 	}
 
 	// Get files from template

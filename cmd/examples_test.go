@@ -26,7 +26,7 @@ func TestInitExamplesIncludeAllFlags(t *testing.T) {
 	}
 
 	// Check that all template options are listed
-	templates := []string{"base", "typescript", "python", "rust", "php", "go"}
+	templates := []string{"base", "typescript", "python", "rust", "php", "go", "swift"}
 	for _, tmpl := range templates {
 		if !strings.Contains(examples, tmpl) {
 			t.Errorf("InitCommand examples missing template: %s", tmpl)

@@ -45,8 +45,8 @@ func (dc *DoctorCommand) Description() string {
 func (dc *DoctorCommand) LongDescription() string {
 	return `Check system dependencies and configuration for Maajise.
 
-Verifies that required tools (Git, Beads) are installed and accessible, and optionally
-checks for optional tools (UBS, Go). Helps diagnose setup issues and verify the system
+Verifies that required tools (Git, Beads via beads_rust) are installed and accessible, and optionally
+checks for optional tools (UBS, Go, Swift). Helps diagnose setup issues and verify the system
 is properly configured for using Maajise.`
 }
 
@@ -70,12 +70,7 @@ func (dc *DoctorCommand) Run(args []string) error {
 	ui.Info("Checking maajise dependencies...")
 	fmt.Println()
 
-	checks := []DependencyCheck{
-		{Name: "git", Command: "git", Args: []string{"--version"}, Required: true},
-		{Name: "bd (Beads)", Command: "bd", Args: []string{"--version"}, Required: true},
-		{Name: "ubs", Command: "ubs", Args: []string{"--version"}, Required: false},
-		{Name: "go", Command: "go", Args: []string{"version"}, Required: false},
-	}
+	checks := dc.defaultDependencyChecks()
 
 	allOK := true
 	requiredMissing := false
@@ -154,6 +149,16 @@ func (dc *DoctorCommand) Run(args []string) error {
 	}
 
 	return nil
+}
+
+func (dc *DoctorCommand) defaultDependencyChecks() []DependencyCheck {
+	return []DependencyCheck{
+		{Name: "git", Command: "git", Args: []string{"--version"}, Required: true},
+		{Name: "br (beads_rust)", Command: "br", Args: []string{"--version"}, Required: true},
+		{Name: "ubs", Command: "ubs", Args: []string{"--version"}, Required: false},
+		{Name: "go", Command: "go", Args: []string{"version"}, Required: false},
+		{Name: "swift", Command: "swift", Args: []string{"--version"}, Required: false},
+	}
 }
 
 func (dc *DoctorCommand) runCheck(check DependencyCheck) DependencyCheck {

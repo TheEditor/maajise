@@ -43,7 +43,7 @@ func NewInitCommand() *InitCommand {
 	// Define flags (will use merged defaults)
 	ic.fs.BoolVar(&ic.config.InPlace, "in-place", false, "Initialize in current directory")
 	ic.fs.BoolVar(&ic.config.NoOverwrite, "no-overwrite", false, "Don't overwrite existing files")
-	ic.fs.StringVar(&ic.template, "template", ic.config.Template, "Project template (base, typescript, python, rust, php, go)")
+	ic.fs.StringVar(&ic.template, "template", ic.config.Template, "Project template (base, typescript, python, rust, php, go, swift)")
 	ic.fs.BoolVar(&ic.config.SkipGit, "skip-git", false, "Skip Git initialization")
 	ic.fs.BoolVar(&ic.config.SkipBeads, "skip-beads", false, "Skip Beads initialization")
 	ic.fs.BoolVar(&ic.config.SkipCommit, "skip-commit", false, "Skip initial commit")
@@ -75,7 +75,7 @@ Creates a project directory (or initializes the current directory with --in-plac
 Git for version control, initializes Beads for issue tracking, and creates standard configuration
 files based on the selected template.
 
-Available templates: base, typescript, python, rust, php, go. Use 'maajise templates' to see
+Available templates: base, typescript, python, rust, php, go, swift. Use 'maajise templates' to see
 detailed descriptions of each template.`
 }
 
@@ -142,13 +142,14 @@ func (ic *InitCommand) Examples() string {
       Shows detailed output during initialization
 
   # Available templates
-  Available templates: base, typescript, python, rust, php, go
+  Available templates: base, typescript, python, rust, php, go, swift
       base:       Basic project structure (.gitignore, README, .ubsignore)
       typescript: TypeScript project (tsconfig.json, package.json)
       python:     Python project (pyproject.toml, requirements.txt)
       rust:       Rust project (Cargo.toml)
       php:        PHP project (composer.json)
-      go:         Go project (go.mod)`
+      go:         Go project (go.mod)
+      swift:      Swift project (Package.swift)`
 }
 
 func (ic *InitCommand) Run(args []string) error {
@@ -259,7 +260,7 @@ func (ic *InitCommand) runDryRun() error {
 	// Show files from template
 	tmpl, ok := templates.Get(ic.template)
 	if !ok {
-		return ui.UsageError("init", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go)", ic.template))
+		return ui.UsageError("init", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go, swift)", ic.template))
 	}
 
 	files := tmpl.Files(ic.config.ProjectName)
@@ -577,7 +578,7 @@ func (ic *InitCommand) initBeads(repoDir string) {
 	}
 
 	if err := beads.Init(repoDir, ic.config.Verbose); err != nil {
-		ui.Warn("Beads init failed (run 'bd init' manually)")
+		ui.Warn("Beads init failed (run 'br init' manually)")
 		return
 	}
 }
@@ -585,7 +586,7 @@ func (ic *InitCommand) initBeads(repoDir string) {
 func (ic *InitCommand) createFiles(repoDir string) error {
 	tmpl, ok := templates.Get(ic.template)
 	if !ok {
-		return ui.UsageError("init", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go)", ic.template))
+		return ui.UsageError("init", fmt.Sprintf("unknown template: %s (available: base, typescript, python, rust, php, go, swift)", ic.template))
 	}
 
 	files := tmpl.Files(ic.config.ProjectName)
@@ -762,11 +763,11 @@ func (ic *InitCommand) showSummary(repoPath string) {
 	}
 
 	fmt.Println("  2. Run 'ubs .' to scan for issues")
-	fmt.Println("  3. Run 'bd list' to manage tasks")
+	fmt.Println("  3. Run 'br list' to manage tasks")
 	fmt.Println()
 	ui.Info("Quick commands:")
-	fmt.Println("  bd create --title \"Task name\"    # Create new task")
-	fmt.Println("  bd list                           # View all tasks")
+	fmt.Println("  br create --title \"Task name\"    # Create new task")
+	fmt.Println("  br list                           # View all tasks")
 	fmt.Println("  ubs .                             # Scan for bugs")
 	fmt.Println()
 }
